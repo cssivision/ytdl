@@ -18,74 +18,66 @@ struct Options {
 }
 
 fn main() {
-    let matches = App::new("ytdl")
-        .setting(AppSettings::ArgRequiredElseHelp)
-        .version("0.0.1")
-        .about("download youtube videos")
-        .arg(Arg::with_name("output")
+    let flags = vec![
+        Arg::with_name("output")
             .short("o")
             .long("output")
             .value_name("FILE")
             .help("write output to a file")
-            .takes_value(true)
-        )
-        .arg(Arg::with_name("no-progress")
+            .takes_value(true),
+        Arg::with_name("no-progress")
             .long("no-progress")
-            .help("write output to a file")
-        )
-        .arg(Arg::with_name("range")
+            .help("write output to a file"),
+        Arg::with_name("range")
             .short("r")
             .long("range")
             .value_name("RANGE")
             .help("download a specific range of bytes of the video, [start]-[end]")
-            .takes_value(true)
-        )
-        .arg(Arg::with_name("download-url")
+            .takes_value(true),
+        Arg::with_name("download-url")
             .short("-u")
             .long("download-url")
             .value_name("URL")
             .help("prints download url to stdout")
-            .takes_value(true)
-        )
-        .arg(Arg::with_name("json")
+            .takes_value(true),
+        Arg::with_name("json")
             .short("j")
             .long("json")
-            .help("print info json to stdout")
-        )
-        .arg(Arg::with_name("debug")
+            .help("print info json to stdout"),
+        Arg::with_name("debug")
             .short("d")
             .long("debug")
-            .help("output debug log")
-        )
-        .arg(Arg::with_name("filter")
+            .help("output debug log"),
+        Arg::with_name("filter")
             .short("f")
             .long("filter")
             .value_name("FILTER")
             .multiple(true)
             .help("filter available formats, syntax: val1 val2 val3")
-            .takes_value(true)
-        )
-        .arg(Arg::with_name("append")
+            .takes_value(true),
+        Arg::with_name("append")
             .short("-a")
             .long("--append")
-            .help("append to output file instead of overwriting")
-        )
-        .arg(Arg::with_name("start-offset")
+            .help("append to output file instead of overwriting"),
+        Arg::with_name("start-offset")
             .long("start-offset")
             .value_name("STARTOFFSET")
             .help("offset the start of the video")
-            .takes_value(true)
-        )
-        .arg(Arg::with_name("silent")
+            .takes_value(true),
+        Arg::with_name("silent")
             .short("s")
             .long("silent")
-            .help("only output error, also diables progressbar")
-        )
-        .arg(Arg::with_name("info")
+            .help("only output error, also diables progressbar"),
+        Arg::with_name("info")
             .short("i")
             .long("info")
-            .help("only output info")
-        )
+            .help("only output info")];
+        
+    let matches = App::new("ytdl")
+        .setting(AppSettings::ArgRequiredElseHelp)
+        .version("0.0.1")
+        .about("download youtube videos")
+        .args(&flags)
         .get_matches();
 
     let mut filter = vec![];
