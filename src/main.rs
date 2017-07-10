@@ -34,6 +34,9 @@ fn main() {
             .value_name("RANGE")
             .help("download a specific range of bytes of the video, [start]-[end]")
             .takes_value(true),
+        Arg::with_name("url")
+            .help("youtube url")
+            .index(1),
         Arg::with_name("download-url")
             .short("-u")
             .long("download-url")
