@@ -10,7 +10,7 @@ struct Options {
     debug: bool,
     append: bool,
     json: bool,
-    download_url: String,
+    download_url: bool,
     filter: Vec<String>,
     byte_range: String,
     output_file: String,
@@ -37,9 +37,7 @@ fn main() {
         Arg::with_name("download-url")
             .short("-u")
             .long("download-url")
-            .value_name("URL")
-            .help("prints download url to stdout")
-            .takes_value(true),
+            .help("prints download url to stdout"),
         Arg::with_name("json")
             .short("j")
             .long("json")
@@ -92,10 +90,10 @@ fn main() {
         debug: matches.is_present("debug"),
         append: matches.is_present("append"),
         json: matches.is_present("json"),
+        download_url: matches.is_present("download-url"),
         filter: filter,
         output_file: matches.value_of("output").unwrap_or("").to_string(),
         byte_range: matches.value_of("range").unwrap_or("").to_string(),
-        download_url: matches.value_of("download-url").unwrap_or("").to_string(),
         start_offset: matches.value_of("start-offset").unwrap_or("").to_string(),
     };
 
