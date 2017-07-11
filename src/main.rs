@@ -81,6 +81,7 @@ fn main() {
         .args(&flags)
         .get_matches();
 
+    
     let mut filter = vec![];
     if matches.is_present("filter") {
         filter = matches.values_of("filter").unwrap().map(|s| String::from(s)).collect();
@@ -95,10 +96,8 @@ fn main() {
         json: matches.is_present("json"),
         download_url: matches.is_present("download-url"),
         filter: filter,
-        output_file: matches.value_of("output").unwrap_or("").to_string(),
-        byte_range: matches.value_of("range").unwrap_or("").to_string(),
-        start_offset: matches.value_of("start-offset").unwrap_or("").to_string(),
+        output_file: matches.value_of("output").unwrap_or_default().to_string(),
+        byte_range: matches.value_of("range").unwrap_or_default().to_string(),
+        start_offset: matches.value_of("start-offset").unwrap_or_default().to_string(),
     };
-
-    println!("{:?}", options);
 }
