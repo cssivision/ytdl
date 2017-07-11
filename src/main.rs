@@ -1,6 +1,10 @@
 extern crate clap;
+#[macro_use]
+extern crate log;
 
 use clap::{App, AppSettings, Arg};
+
+mod format;
 
 #[derive(Debug)]
 struct Options {
@@ -36,6 +40,7 @@ fn main() {
             .takes_value(true),
         Arg::with_name("url")
             .help("youtube url")
+            .required(true)
             .index(1),
         Arg::with_name("download-url")
             .short("-u")
@@ -87,7 +92,7 @@ fn main() {
         filter = matches.values_of("filter").unwrap().map(|s| String::from(s)).collect();
     }
 
-    let options = Options {
+    let mut options = Options {
         no_progress: matches.is_present("no-progress"),
         info_only: matches.is_present("info"),
         silent: matches.is_present("silent"),
@@ -100,4 +105,21 @@ fn main() {
         byte_range: matches.value_of("range").unwrap_or_default().to_string(),
         start_offset: matches.value_of("start-offset").unwrap_or_default().to_string(),
     };
+
+    let identifier = matches.value_of("url").unwrap_or_default().to_string();
+    if options.filter.is_empty() {
+        options.filter = vec![
+            format!("{}:mp4", format::FORMAT_EXTENSION_KEY),
+            format!("!{}:", format::FORMAT_VIDEO_ENCODING_KEY),
+            format!("!{}:", format::FORMAT_AUDIO_ENCODING_KEY),
+            format!("best"),
+        ];
+    }
+
+    handler(identifier, &options);
+}
+
+fn handler(identifier: String, options: &Options) {
+    if options.output_file == "" {
+    }
 }
