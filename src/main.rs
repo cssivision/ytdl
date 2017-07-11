@@ -1,10 +1,13 @@
 extern crate clap;
 #[macro_use]
 extern crate log;
+extern crate env_logger;
+extern crate url;
 
 use clap::{App, AppSettings, Arg};
 
 mod format;
+mod video_info;
 
 #[derive(Debug)]
 struct Options {
@@ -22,6 +25,8 @@ struct Options {
 }
 
 fn main() {
+    env_logger::init();
+
     let flags = vec![
         Arg::with_name("output")
             .short("o")
@@ -106,7 +111,7 @@ fn main() {
         start_offset: matches.value_of("start-offset").unwrap_or_default().to_string(),
     };
 
-    let identifier = matches.value_of("url").unwrap_or_default().to_string();
+    let identifier = matches.value_of("url").unwrap_or_default();
     if options.filter.is_empty() {
         options.filter = vec![
             format!("{}:mp4", format::FORMAT_EXTENSION_KEY),
@@ -119,7 +124,7 @@ fn main() {
     handler(identifier, &options);
 }
 
-fn handler(identifier: String, options: &Options) {
-    if options.output_file == "" {
-    }
+fn handler(identifier: &str, options: &Options) {
+    info!("fetching video info...");
+    video_info::get_video_info(identifier);
 }
