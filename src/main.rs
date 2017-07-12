@@ -3,6 +3,7 @@ extern crate clap;
 extern crate log;
 extern crate env_logger;
 extern crate url;
+extern crate chrono;
 
 use clap::{App, AppSettings, Arg};
 
