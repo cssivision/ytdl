@@ -4,6 +4,7 @@ extern crate log;
 extern crate env_logger;
 extern crate url;
 extern crate chrono;
+extern crate reqwest;
 
 use clap::{App, AppSettings, Arg};
 
@@ -11,7 +12,7 @@ mod format;
 mod video_info;
 
 #[derive(Debug)]
-struct Options {
+struct Options<'a> {
     no_progress: bool,
     info_only: bool,
     silent: bool, 
@@ -19,10 +20,10 @@ struct Options {
     append: bool,
     json: bool,
     download_url: bool,
-    filter: Vec<String>,
-    byte_range: String,
-    output_file: String,
-    start_offset: String,
+    filter: Vec<&'a str>,
+    byte_range: &'a str,
+    output_file: &'a str,
+    start_offset: &'a str,
 }
 
 fn main() {
@@ -95,7 +96,7 @@ fn main() {
     
     let mut filter = vec![];
     if matches.is_present("filter") {
-        filter = matches.values_of("filter").unwrap().map(|s| String::from(s)).collect();
+        filter = matches.values_of("filter").unwrap().collect();
     }
 
     let mut options = Options {
@@ -107,25 +108,32 @@ fn main() {
         json: matches.is_present("json"),
         download_url: matches.is_present("download-url"),
         filter: filter,
-        output_file: matches.value_of("output").unwrap_or_default().to_string(),
-        byte_range: matches.value_of("range").unwrap_or_default().to_string(),
-        start_offset: matches.value_of("start-offset").unwrap_or_default().to_string(),
+        output_file: matches.value_of("output").unwrap_or_default(),
+        byte_range: matches.value_of("range").unwrap_or_default(),
+        start_offset: matches.value_of("start-offset").unwrap_or_default(),
     };
 
     let identifier = matches.value_of("url").unwrap_or_default();
-    if options.filter.is_empty() {
-        options.filter = vec![
-            format!("{}:mp4", format::FORMAT_EXTENSION_KEY),
-            format!("!{}:", format::FORMAT_VIDEO_ENCODING_KEY),
-            format!("!{}:", format::FORMAT_AUDIO_ENCODING_KEY),
-            format!("best"),
-        ];
-    }
+    // if options.filter.is_empty() {
+    //     options.filter = vec![
+    //         format!("{}:mp4", format::FORMAT_EXTENSION_KEY).as_str(),
+    //         format!("!{}:", format::FORMAT_VIDEO_ENCODING_KEY).as_str(),
+    //         format!("!{}:", format::FORMAT_AUDIO_ENCODING_KEY).as_str(),
+    //         format!("best").as_str(),
+    //     ];
+    // }
 
     handler(identifier, &options);
 }
 
 fn handler(identifier: &str, options: &Options) {
     info!("fetching video info...");
-    video_info::get_video_info(identifier);
+    match video_info::get_video_info(identifier) {
+        Ok(info) => {
+            println!("info");
+        },
+        Err(e) => {
+            println!("{}", e)
+        }
+    }
 }
