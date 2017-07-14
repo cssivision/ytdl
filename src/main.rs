@@ -12,7 +12,7 @@ mod format;
 mod video_info;
 
 #[derive(Debug)]
-struct Options<'a> {
+struct Options {
     no_progress: bool,
     info_only: bool,
     silent: bool, 
@@ -20,11 +20,11 @@ struct Options<'a> {
     append: bool,
     json: bool,
     download_url: bool,
-    filter: Vec<&'a str>,
-    byte_range: &'a str,
-    output_file: &'a str,
-    start_offset: &'a str,
-    proxy_url: &'a str,
+    filter: Vec<String>,
+    byte_range: String,
+    output_file: String,
+    start_offset: String,
+    proxy_url: String,
 }
 
 fn main() {
@@ -103,7 +103,7 @@ fn main() {
     
     let mut filter = vec![];
     if matches.is_present("filter") {
-        filter = matches.values_of("filter").unwrap().collect();
+        filter = matches.values_of("filter").unwrap().map(|x| x.to_string()).collect();
     }
 
     let mut options = Options {
@@ -115,21 +115,21 @@ fn main() {
         json: matches.is_present("json"),
         download_url: matches.is_present("download-url"),
         filter: filter,
-        output_file: matches.value_of("output").unwrap_or_default(),
-        byte_range: matches.value_of("range").unwrap_or_default(),
-        start_offset: matches.value_of("start-offset").unwrap_or_default(),
-        proxy_url: matches.value_of("proxy_url").unwrap_or_default(),
+        output_file: matches.value_of("output").unwrap_or_default().to_string(),
+        byte_range: matches.value_of("range").unwrap_or_default().to_string(),
+        start_offset: matches.value_of("start-offset").unwrap_or_default().to_string(),
+        proxy_url: matches.value_of("proxy_url").unwrap_or_default().to_string(),
     };
 
     let identifier = matches.value_of("url").unwrap_or_default();
-    // if options.filter.is_empty() {
-    //     options.filter = vec![
-    //         format!("{}:mp4", format::FORMAT_EXTENSION_KEY).as_str(),
-    //         format!("!{}:", format::FORMAT_VIDEO_ENCODING_KEY).as_str(),
-    //         format!("!{}:", format::FORMAT_AUDIO_ENCODING_KEY).as_str(),
-    //         format!("best").as_str(),
-    //     ];
-    // }
+    if options.filter.is_empty() {
+        options.filter = vec![
+            format!("{}:mp4", format::FORMAT_EXTENSION_KEY),
+            format!("!{}:", format::FORMAT_VIDEO_ENCODING_KEY),
+            format!("!{}:", format::FORMAT_AUDIO_ENCODING_KEY),
+            format!("best"),
+        ];
+    }
 
     handler(identifier, &options);
 }

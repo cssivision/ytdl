@@ -7,12 +7,12 @@ pub const FORMAT_AUDIO_ENCODING_KEY: &str = "audenc";
 pub const FORMAT_ITAG_KEY: &str = "itag";
 pub const FORMAT_AUDIO_BITRATE_KEY: &str = "audbr";
 
-pub struct Format<'a> {
+pub struct Format {
     itag: i32,
-	extension: &'a str,
-	resolution: &'a str,
-	VideoEncoding: &'a str,
-	AudioEncoding: &'a str,
+	extension: String,
+	resolution: String,
+	VideoEncoding: String,
+	AudioEncoding: String,
 	AudioBitrate: i32,
-	meta: HashMap<&'a str, &'a str>,
+	meta: HashMap<String, String>,
 }
