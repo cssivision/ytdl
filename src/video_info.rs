@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::collections::HashMap;
 use std::io::Read;
+use std::time::{Duration as StdDuration};
 
 use url::{Url, form_urlencoded};
 use chrono::{DateTime, Utc, Duration};
@@ -9,19 +10,20 @@ use reqwest::{self as request, StatusCode};
 
 #[derive(Default)]
 pub struct VideoInfo {
-    id: String,
-    title: String,
-    describe: String,
-    date_published: Option<DateTime<Utc>>,
-    formats: Vec<Format>,
-    keywords: Vec<String>,
-    author: Option<String>,
-    duration: Option<Duration>,
-    html_player_file: String,
+    pub id: String,
+    pub title: String,
+    pub describe: String,
+    pub date_published: Option<DateTime<Utc>>,
+    pub formats: Vec<Format>,
+    pub keywords: Vec<String>,
+    pub author: String,
+    pub duration: Option<Duration>,
+    pub html_player_file: String,
 }
 
 const YOUTUBE_BASE_URL: &str = "https://www.youtube.com/watch";
 const YOUTUBE_VIDEO_INFO_URL: &str = "https://www.youtube.com/get_video_info";
+const YOUTUBE_VIDEO_INFO_EURL: &str = "https://youtube.googleapis.com/v/";
 
 pub fn get_video_info(value: &str) -> Result<VideoInfo, Box<Error>> {
     let parse_url = match Url::parse(value) {
@@ -81,7 +83,7 @@ fn get_video_info_from_html(id: &str, body: &str) -> Result<VideoInfo, Box<Error
     let mut info = String::new();
     resp.read_to_string(&mut info)?;
     let info = parse_query(info);
-    let mut video_info = VideoInfo{..Default::default()};
+    let mut video_info: VideoInfo = Default::default();
     match info.get("status") {
         Some(s) => {
             if s == "fail" {
@@ -100,14 +102,45 @@ fn get_video_info_from_html(id: &str, body: &str) -> Result<VideoInfo, Box<Error
     };
 
     if let Some(author) = info.get("author") {
-        video_info.author = Some(author.to_string());
+        video_info.author = author.to_string();
+    } else {
+        debug!("unable to extract author");
     }
-    debug!("unable to extract author");
 
-    if let Some(duration) = info.get("length_seconds") {
-        // video_info.duration = 
+    if let Some(length) = info.get("length_seconds") {
+        let duration = length.parse::<u64>()?;
+        video_info.duration = Some(Duration::from_std(StdDuration::new(duration, 0))?);
+    } else {
+        debug!("unable to parse duration string");
     }
-    debug!("unable to parse duration string");
+
+    if let Some(keywords) = info.get("keywords") {
+        video_info.keywords = keywords.split(",").map(|s| s.to_string()).collect();
+    } else {
+        debug!("unable to extract keywords")
+    }
+
+    let mut format_strings = vec![];
+    if let Some(fmt_stream) = info.get("url_encoded_fmt_stream_map") {
+        format_strings.append(&mut fmt_stream.split(",").collect())
+    }
+
+    if let Some(adaptive_fmts) = info.get("adaptive_fmts") {
+        format_strings.append(&mut adaptive_fmts.split(",").collect());
+    }
+
+    for v in &format_strings {
+        let query = parse_query(v.to_string());
+        let itag = match query.get("itag") {
+            Some(i) => {
+
+            },
+            None => {
+                continue;
+            }
+        };
+    }
+
     Ok(video_info)
 }
 

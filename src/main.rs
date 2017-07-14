@@ -1,6 +1,8 @@
 extern crate clap;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate lazy_static;
 extern crate env_logger;
 extern crate url;
 extern crate chrono;
@@ -138,7 +140,7 @@ fn handler(identifier: &str, options: &Options) {
     info!("fetching video info...");
     match video_info::get_video_info(identifier) {
         Ok(info) => {
-            println!("info");
+            println!("{}, {:?}", info.author, info.keywords);
         },
         Err(e) => {
             println!("{}", e)
