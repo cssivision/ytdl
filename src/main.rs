@@ -24,10 +24,11 @@ struct Options<'a> {
     byte_range: &'a str,
     output_file: &'a str,
     start_offset: &'a str,
+    proxy_url: &'a str,
 }
 
 fn main() {
-    env_logger::init();
+    env_logger::init().expect("env logger init fail");
 
     let flags = vec![
         Arg::with_name("output")
@@ -35,6 +36,12 @@ fn main() {
             .long("output")
             .value_name("FILE")
             .help("write output to a file")
+            .takes_value(true),
+        Arg::with_name("proxy_url")
+            .short("p")
+            .long("proxy_url")
+            .value_name("PROXY_URL")
+            .help("use proxy for the request")
             .takes_value(true),
         Arg::with_name("no-progress")
             .long("no-progress")
@@ -111,6 +118,7 @@ fn main() {
         output_file: matches.value_of("output").unwrap_or_default(),
         byte_range: matches.value_of("range").unwrap_or_default(),
         start_offset: matches.value_of("start-offset").unwrap_or_default(),
+        proxy_url: matches.value_of("proxy_url").unwrap_or_default(),
     };
 
     let identifier = matches.value_of("url").unwrap_or_default();
