@@ -6,6 +6,10 @@ extern crate lazy_static;
 extern crate env_logger;
 extern crate url;
 extern crate reqwest;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
 
 use std::env;
 
@@ -28,7 +32,7 @@ struct Options {
     filter: Vec<String>,
     byte_range: String,
     output_file: String,
-    start_offset: String,
+    start_offset: i32,
     proxy_url: String,
 }
 
@@ -42,9 +46,9 @@ fn main() {
             .value_name("FILE")
             .help("write output to a file")
             .takes_value(true),
-        Arg::with_name("proxy_url")
+        Arg::with_name("proxy-url")
             .short("p")
-            .long("proxy_url")
+            .long("proxy-url")
             .value_name("PROXY_URL")
             .help("use proxy for the request")
             .takes_value(true),
@@ -122,8 +126,8 @@ fn main() {
         filter: filter,
         output_file: matches.value_of("output").unwrap_or_default().to_string(),
         byte_range: matches.value_of("range").unwrap_or_default().to_string(),
-        start_offset: matches.value_of("start-offset").unwrap_or_default().to_string(),
-        proxy_url: matches.value_of("proxy_url").unwrap_or_default().to_string(),
+        start_offset: matches.value_of("start-offset").unwrap_or("0").parse::<i32>().unwrap(),
+        proxy_url: matches.value_of("proxy-url").unwrap_or_default().to_string(),
     };
 
     if !options.proxy_url.is_empty() {
@@ -158,10 +162,36 @@ fn handler(identifier: &str, options: &Options) {
         println!("Duration: {}s", info.duration);
         return
     } else if options.json {
+        println!("{}", serde_json::to_string(&info).unwrap_or_default());
+        return 
+    }
+
+    let formats = &info.formats;
+    for x in &options.filter {
 
     }
 
-    for f in &info.formats {
-        println!("{}", f.itag);
+    if formats.len() == 0 {
+        println!("no formats available that match criteria");
+        return 
     }
+
+    let f = &formats[0];
+    let mut download_url = match info.get_download_url(f) {
+        Ok(u) => u,
+        Err(e) => {
+            println!("unable to get download url: {}", e.to_string());
+            return
+        }
+    };
+
+    if options.start_offset != 0 {
+        download_url.query_pairs_mut().append_pair("begin", &format!("{}", &options.start_offset * 1000));
+    }
+
+    if options.download_url {
+        println!("{}", download_url.as_str());
+    }
+
+    
 }

@@ -4,10 +4,11 @@ use std::io::Read;
 use std::env;
 
 use url::{Url, form_urlencoded};
+use url::percent_encoding::percent_decode;
 use format::Format;
 use reqwest::{self as request, StatusCode, Client};
 
-#[derive(Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct VideoInfo {
     pub id: String,
     pub describe: String,
@@ -17,15 +18,33 @@ pub struct VideoInfo {
     pub duration: i32,
 }
 
-const YOUTUBE_BASE_URL: &str = "https://www.youtube.com/watch";
+impl VideoInfo {
+    pub fn get_download_url(&self, f: &Format) -> Result<Url, Box<Error>> {
+        let sig = f.meta.get("sig").map(|s| s.as_str()).unwrap_or_default();
+        let url_str = if let Some(u) = f.meta.get("url") {
+            u.as_str()
+        } else {
+            return Err(From::from("couldn't extract url from format"));
+        };
+
+        let url_str = percent_decode(url_str.as_bytes()).decode_utf8()?.into_owned();
+        let mut parse_url = Url::parse(&url_str)?;
+        parse_url.query_pairs_mut().append_pair("ratebypass", "yes");
+        if !sig.is_empty() {
+            parse_url.query_pairs_mut().append_pair("signature", sig);
+        }
+
+        Ok(parse_url)
+    }
+}
+
 const YOUTUBE_VIDEO_INFO_URL: &str = "https://www.youtube.com/get_video_info";
-const YOUTUBE_VIDEO_INFO_EURL: &str = "https://youtube.googleapis.com/v/";
 
 pub fn get_video_info(value: &str) -> Result<VideoInfo, Box<Error>> {
     let parse_url = match Url::parse(value) {
         Ok(u) => u,
         Err(_) => {
-            return get_info_from_id(value);
+            return get_video_info_from_html(value);
         },
     };
 
@@ -33,44 +52,29 @@ pub fn get_video_info(value: &str) -> Result<VideoInfo, Box<Error>> {
         return get_video_info_from_short_url(&parse_url);
     }
 
-    return get_video_info_from_url(&parse_url);
+    get_video_info_from_url(&parse_url)
 }
 
 fn get_video_info_from_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
     if let Some(video_id) = u.query_pairs().into_owned().collect::<HashMap<String, String>>().get("v") {
-        return get_info_from_id(video_id);
+        return get_video_info_from_html(video_id);
     }
     Err(From::from("invalid youtube url, no video id"))
-}
-
-fn get_info_from_id(id: &str) -> Result<VideoInfo, Box<Error>> {
-    let mut parse_url = Url::parse(YOUTUBE_BASE_URL)?;
-    parse_url.set_query(Some(format!("v={}", id).as_str()));
-    let client = get_client()?;
-    let mut resp = client.get(parse_url.as_str())?.send()?;
-
-    if resp.status() != StatusCode::Ok {
-        return Err(From::from("Invalid status code"))
-    }
-    let mut body = String::new();
-    resp.read_to_string(&mut body)?;
-    get_video_info_from_html(id, &body)
 }
 
 fn get_video_info_from_short_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
     let path = u.path().trim_left_matches("/");
     if path.len() > 0 {
-        return get_info_from_id(path);
+        return get_video_info_from_html(path);
     }
 
     Err(From::from("could not parse short URL"))
 }
 
-fn get_video_info_from_html(id: &str, body: &str) -> Result<VideoInfo, Box<Error>> {
+fn get_video_info_from_html(id: &str) -> Result<VideoInfo, Box<Error>> {
     let info_url = format!("{}?video_id={}", YOUTUBE_VIDEO_INFO_URL, id);
     debug!("{}", info_url);
-    let client = get_client()?;
-    let mut resp = client.get(info_url.as_str())?.send()?;
+    let mut resp = get_client()?.get(info_url.as_str())?.send()?;
     if resp.status() != StatusCode::Ok {
         return Err(From::from("video info response invalid status code"));
     }
@@ -82,13 +86,11 @@ fn get_video_info_from_html(id: &str, body: &str) -> Result<VideoInfo, Box<Error
     match info.get("status") {
         Some(s) => {
             if s == "fail" {
-                return Err(
-                    From::from(format!(
-                        "Error {}:{}", 
-                        info.get("errorcode").unwrap_or(&"".to_string()), 
-                        info.get("reason").unwrap_or(&"".to_string()))
-                    )
-                );
+                return Err(From::from(format!(
+                    "Error {}:{}", 
+                    info.get("errorcode").map(|s| s.as_str()).unwrap_or_default(), 
+                    info.get("reason").map(|s| s.as_str()).unwrap_or_default()
+                )));
             } 
         },
         None => {
@@ -135,7 +137,7 @@ fn get_video_info_from_html(id: &str, body: &str) -> Result<VideoInfo, Box<Error
 
         if let Ok(i) = itag.parse::<i32>() {
             if let Some(mut f) = Format::new(i) {
-                if query.get("conn").unwrap_or(&"".to_string()).starts_with("rtmp") {
+                if query.get("conn").map(|s| s.as_str()).unwrap_or_default().starts_with("rtmp") {
                     f.meta.insert("rtmp".to_string(), "true".to_string());
                 }
 

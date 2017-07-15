@@ -8,7 +8,7 @@ pub const FORMAT_ITAG_KEY: &str = "itag";
 pub const FORMAT_AUDIO_BITRATE_KEY: &str = "audbr";
 
 
-#[derive(Default, Clone)]
+#[derive(Serialize, Deserialize, Default, Clone)]
 pub struct Format {
     pub itag: i32,
 	pub audio_bitrate: i32,
