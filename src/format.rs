@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
 pub const FORMAT_EXTENSION_KEY: &str = "ext";
-pub const FORMAT_rESOLUTION_KEY: &str = "res";
+pub const FORMAT_RESOLUTION_KEY: &str = "res";
 pub const FORMAT_VIDEO_ENCODING_KEY: &str = "videnc";
 pub const FORMAT_AUDIO_ENCODING_KEY: &str = "audenc";
-pub const FORMAT_iTAG_KEY: &str = "itag";
+pub const FORMAT_ITAG_KEY: &str = "itag";
 pub const FORMAT_AUDIO_BITRATE_KEY: &str = "audbr";
 
 
@@ -23,7 +23,7 @@ pub struct Format {
 lazy_static! {
     static ref FORMATS: HashMap<i32, Format> = {
         let mut m = HashMap::new();
-		let DATA = [
+		let data = [
 			(5, Format{
 				extension:     "flv".to_string(),
 				resolution:    "240p".to_string(),
@@ -577,7 +577,7 @@ lazy_static! {
 			}),
 		];
 
-		for v in DATA.iter() {
+		for v in data.iter() {
 			m.insert(v.0, v.1.clone());
 		}
 		m 
@@ -585,7 +585,7 @@ lazy_static! {
 }
 
 impl Format {
-	fn new(itag: i32) -> Option<Format> {
+	pub fn new(itag: i32) -> Option<Format> {
 		FORMATS.get(&itag).map(|f| f.clone())
 	}
 }

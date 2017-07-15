@@ -5,13 +5,16 @@ extern crate log;
 extern crate lazy_static;
 extern crate env_logger;
 extern crate url;
-extern crate chrono;
 extern crate reqwest;
+
+use std::env;
 
 use clap::{App, AppSettings, Arg};
 
 mod format;
 mod video_info;
+
+const YTDL_PROXY_URL: &str = "YTDL_PROXY_URL";
 
 #[derive(Debug)]
 struct Options {
@@ -123,6 +126,10 @@ fn main() {
         proxy_url: matches.value_of("proxy_url").unwrap_or_default().to_string(),
     };
 
+    if !options.proxy_url.is_empty() {
+        env::set_var(YTDL_PROXY_URL, &options.proxy_url);
+    }
+
     let identifier = matches.value_of("url").unwrap_or_default();
     if options.filter.is_empty() {
         options.filter = vec![
@@ -138,12 +145,23 @@ fn main() {
 
 fn handler(identifier: &str, options: &Options) {
     info!("fetching video info...");
-    match video_info::get_video_info(identifier) {
-        Ok(info) => {
-            println!("{}, {:?}", info.author, info.keywords);
-        },
+    let info = match video_info::get_video_info(identifier) {
+        Ok(i) => i,
         Err(e) => {
-            println!("{}", e)
+            println!("unable to fetch video info: {}", e.to_string());
+            return;
         }
+    };
+
+    if options.info_only {
+        println!("Author: {}", info.author);
+        println!("Duration: {}s", info.duration);
+        return
+    } else if options.json {
+
+    }
+
+    for f in &info.formats {
+        println!("{}", f.itag);
     }
 }

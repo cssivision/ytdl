@@ -1,24 +1,20 @@
 use std::error::Error;
 use std::collections::HashMap;
 use std::io::Read;
-use std::time::{Duration as StdDuration};
+use std::env;
 
 use url::{Url, form_urlencoded};
-use chrono::{DateTime, Utc, Duration};
 use format::Format;
-use reqwest::{self as request, StatusCode};
+use reqwest::{self as request, StatusCode, Client};
 
 #[derive(Default)]
 pub struct VideoInfo {
     pub id: String,
-    pub title: String,
     pub describe: String,
-    pub date_published: Option<DateTime<Utc>>,
     pub formats: Vec<Format>,
     pub keywords: Vec<String>,
     pub author: String,
-    pub duration: Option<Duration>,
-    pub html_player_file: String,
+    pub duration: i32,
 }
 
 const YOUTUBE_BASE_URL: &str = "https://www.youtube.com/watch";
@@ -37,20 +33,20 @@ pub fn get_video_info(value: &str) -> Result<VideoInfo, Box<Error>> {
         return get_video_info_from_short_url(&parse_url);
     }
 
-    return get_info_from_url(&parse_url);
+    return get_video_info_from_url(&parse_url);
 }
 
-fn get_info_from_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
-    Err(From::from("vdfvf"))
+fn get_video_info_from_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
+    if let Some(video_id) = u.query_pairs().into_owned().collect::<HashMap<String, String>>().get("v") {
+        return get_info_from_id(video_id);
+    }
+    Err(From::from("invalid youtube url, no video id"))
 }
 
 fn get_info_from_id(id: &str) -> Result<VideoInfo, Box<Error>> {
     let mut parse_url = Url::parse(YOUTUBE_BASE_URL)?;
     parse_url.set_query(Some(format!("v={}", id).as_str()));
-    // let mut resp = reqwest::get(parse_url.as_str())?;
-    let client = request::Client::builder()?
-        .proxy(request::Proxy::all("http://127.0.0.1:1087")?)
-        .build()?;
+    let client = get_client()?;
     let mut resp = client.get(parse_url.as_str())?.send()?;
 
     if resp.status() != StatusCode::Ok {
@@ -62,19 +58,18 @@ fn get_info_from_id(id: &str) -> Result<VideoInfo, Box<Error>> {
 }
 
 fn get_video_info_from_short_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
-    Err(From::from("vdfvf"))
-}
+    let path = u.path().trim_left_matches("/");
+    if path.len() > 0 {
+        return get_info_from_id(path);
+    }
 
-fn get_video_info_from_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
-    Err(From::from("vdfvf"))
+    Err(From::from("could not parse short URL"))
 }
 
 fn get_video_info_from_html(id: &str, body: &str) -> Result<VideoInfo, Box<Error>> {
     let info_url = format!("{}?video_id={}", YOUTUBE_VIDEO_INFO_URL, id);
-    println!("{}", info_url);
-    let client = request::Client::builder()?
-        .proxy(request::Proxy::all("http://127.0.0.1:1087")?)
-        .build()?;
+    debug!("{}", info_url);
+    let client = get_client()?;
     let mut resp = client.get(info_url.as_str())?.send()?;
     if resp.status() != StatusCode::Ok {
         return Err(From::from("video info response invalid status code"));
@@ -108,8 +103,7 @@ fn get_video_info_from_html(id: &str, body: &str) -> Result<VideoInfo, Box<Error
     }
 
     if let Some(length) = info.get("length_seconds") {
-        let duration = length.parse::<u64>()?;
-        video_info.duration = Some(Duration::from_std(StdDuration::new(duration, 0))?);
+        video_info.duration = length.parse::<i32>().unwrap_or_default();
     } else {
         debug!("unable to parse duration string");
     }
@@ -129,18 +123,34 @@ fn get_video_info_from_html(id: &str, body: &str) -> Result<VideoInfo, Box<Error
         format_strings.append(&mut adaptive_fmts.split(",").collect());
     }
 
+    let mut formats: Vec<Format> = vec![];
     for v in &format_strings {
         let query = parse_query(v.to_string());
         let itag = match query.get("itag") {
-            Some(i) => {
-
-            },
+            Some(i) => i,
             None => {
                 continue;
             }
         };
+
+        if let Ok(i) = itag.parse::<i32>() {
+            if let Some(mut f) = Format::new(i) {
+                if query.get("conn").unwrap_or(&"".to_string()).starts_with("rtmp") {
+                    f.meta.insert("rtmp".to_string(), "true".to_string());
+                }
+
+                for (k, v) in &query {
+                    f.meta.insert(k.to_string(), v.to_string());
+                }
+
+                formats.push(f);
+            } else {
+                debug!("no metadata found for itag: {}, skipping...", itag)
+            }
+        }
     }
 
+    video_info.formats = formats;
     Ok(video_info)
 }
 
@@ -151,4 +161,18 @@ fn download() {
 fn parse_query(query_str: String) -> HashMap<String, String> {
     let parse_query = form_urlencoded::parse(query_str.as_bytes());
     return parse_query.into_owned().collect::<HashMap<String, String>>();
+}
+
+fn get_client() -> Result<Client, Box<Error>> {
+    let proxy_url = env::var(super::YTDL_PROXY_URL)?;
+    let client: Client;
+    if proxy_url.is_empty() {
+        client = request::Client::new()?;
+    } else {
+        client = request::Client::builder()?
+            .proxy(request::Proxy::all(proxy_url.as_str())?)
+            .build()?;
+    }
+    
+    Ok(client)
 }
