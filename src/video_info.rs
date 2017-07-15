@@ -166,14 +166,13 @@ fn parse_query(query_str: String) -> HashMap<String, String> {
 }
 
 fn get_client() -> Result<Client, Box<Error>> {
-    let proxy_url = env::var(super::YTDL_PROXY_URL)?;
     let client: Client;
-    if proxy_url.is_empty() {
-        client = request::Client::new()?;
-    } else {
+    if let Ok(u) = env::var(super::YTDL_PROXY_URL) {
         client = request::Client::builder()?
-            .proxy(request::Proxy::all(proxy_url.as_str())?)
+            .proxy(request::Proxy::all(u.as_str())?)
             .build()?;
+    } else {
+        client = request::Client::new()?;
     }
     
     Ok(client)
