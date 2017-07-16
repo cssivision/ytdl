@@ -198,7 +198,13 @@ fn handler(identifier: &str, options: &Options) {
         println!("{}", download_url.as_str());
     }
 
-    let filename = video_info::get_filename(&info, &formats[0]);
+    
+    let filename = if !options.output_file.is_empty() {
+        options.output_file.clone()
+    } else {
+        video_info::get_filename(&info, &formats[0])
+    };
+
     let mut file = if options.append {
         OpenOptions::new()
             .write(true)
