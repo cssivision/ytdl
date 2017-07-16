@@ -165,10 +165,6 @@ fn get_video_info_from_html(id: &str) -> Result<VideoInfo, Box<Error>> {
     Ok(video_info)
 }
 
-fn download() {
-    
-}
-
 fn parse_query(query_str: String) -> HashMap<String, String> {
     let parse_query = form_urlencoded::parse(query_str.as_bytes());
     return parse_query.into_owned().collect::<HashMap<String, String>>();

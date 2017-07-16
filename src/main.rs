@@ -232,6 +232,7 @@ fn handler(identifier: &str, options: &Options) {
     pb.set_units(Units::Bytes);
     pb.show_percent = true;
     pb.show_speed = true;
+    pb.show_time_left = true;
     let mut buf = [0; 128 * 1024];
 
     loop {
@@ -248,4 +249,8 @@ fn handler(identifier: &str, options: &Options) {
             Err(e) => panic!("{}", e.to_string()),
         };
     }
+}
+
+fn parse_filter() {
+    
 }
