@@ -18,7 +18,7 @@ use std::io::Read;
 use std::io::Write;
 
 use clap::{App, AppSettings, Arg};
-use pbr::ProgressBar;
+use pbr::{ProgressBar, Units};
 use reqwest::header::ContentLength;
 
 mod format;
@@ -229,13 +229,18 @@ fn handler(identifier: &str, options: &Options) {
 
     let mut pb = ProgressBar::new(file_size);
     pb.format("╢▌▌░╟");
+    pb.set_units(Units::Bytes);
+    pb.show_percent = true;
+    pb.show_speed = true;
     let mut buf = [0; 128 * 1024];
 
     loop {
         match resp.read(&mut buf) {
             Ok(len) => {
                 file.write_all(&buf[..len]).expect("write to file fail");
-                pb.add(len as u64);
+                if !options.silent && !options.no_progress {
+                    pb.add(len as u64);
+                }
                 if len == 0 {
                     break;
                 }
