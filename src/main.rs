@@ -10,15 +10,21 @@ extern crate reqwest;
 extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
+extern crate pbr;
 
 use std::env;
+use std::fs::OpenOptions;
+use std::io::Read;
+use std::io::Write;
 
 use clap::{App, AppSettings, Arg};
+use pbr::ProgressBar;
+use reqwest::header::ContentLength;
 
 mod format;
 mod video_info;
 
-const YTDL_PROXY_URL: &str = "YTDL_PROXY_URL";
+use video_info::YTDL_PROXY_URL;
 
 #[derive(Debug)]
 struct Options {
@@ -176,8 +182,7 @@ fn handler(identifier: &str, options: &Options) {
         return 
     }
 
-    let f = &formats[0];
-    let mut download_url = match info.get_download_url(f) {
+    let mut download_url = match video_info::get_download_url(&formats[0]) {
         Ok(u) => u,
         Err(e) => {
             println!("unable to get download url: {}", e.to_string());
@@ -193,5 +198,49 @@ fn handler(identifier: &str, options: &Options) {
         println!("{}", download_url.as_str());
     }
 
+    let filename = video_info::get_filename(&info, &formats[0]);
+    let mut file = if options.append {
+        OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(true)
+            .open(&filename)
+            .expect("create output file fail")
+    } else {
+        OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(&filename)
+            .expect("create output file fail")
+    };
+
+    info!("download to {}", filename);
+
+    let client = video_info::get_client().expect("get request client fail");
+    let mut resp = client
+        .get(download_url.as_str())
+        .expect("download fail")
+        .send()
+        .expect("download fail");
     
+    let file_size = resp.headers().get::<ContentLength>()
+                .map(|l| **l)
+                .unwrap_or(0);
+
+    let mut pb = ProgressBar::new(file_size);
+    pb.format("╢▌▌░╟");
+    let mut buf = [0; 128 * 1024];
+
+    loop {
+        match resp.read(&mut buf) {
+            Ok(len) => {
+                file.write_all(&buf[..len]).expect("write to file fail");
+                pb.add(len as u64);
+                if len == 0 {
+                    break;
+                }
+            }
+            Err(e) => panic!("{}", e.to_string()),
+        };
+    }
 }

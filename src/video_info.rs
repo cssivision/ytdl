@@ -8,8 +8,12 @@ use url::percent_encoding::percent_decode;
 use format::Format;
 use reqwest::{self as request, StatusCode, Client};
 
+const YOUTUBE_VIDEO_INFO_URL: &str = "https://www.youtube.com/get_video_info";
+pub const YTDL_PROXY_URL: &str = "YTDL_PROXY_URL";
+
 #[derive(Serialize, Deserialize, Default)]
 pub struct VideoInfo {
+    pub title: String,
     pub id: String,
     pub describe: String,
     pub formats: Vec<Format>,
@@ -18,27 +22,26 @@ pub struct VideoInfo {
     pub duration: i32,
 }
 
-impl VideoInfo {
-    pub fn get_download_url(&self, f: &Format) -> Result<Url, Box<Error>> {
-        let sig = f.meta.get("sig").map(|s| s.as_str()).unwrap_or_default();
-        let url_str = if let Some(u) = f.meta.get("url") {
-            u.as_str()
-        } else {
-            return Err(From::from("couldn't extract url from format"));
-        };
+pub fn get_download_url(f: &Format) -> Result<Url, Box<Error>> {
+    let url_str = if let Some(u) = f.meta.get("url") {
+        u.as_str()
+    } else {
+        return Err(From::from("couldn't extract url from format"));
+    };
 
-        let url_str = percent_decode(url_str.as_bytes()).decode_utf8()?.into_owned();
-        let mut parse_url = Url::parse(&url_str)?;
-        parse_url.query_pairs_mut().append_pair("ratebypass", "yes");
-        if !sig.is_empty() {
-            parse_url.query_pairs_mut().append_pair("signature", sig);
-        }
-
-        Ok(parse_url)
-    }
+    let url_str = percent_decode(url_str.as_bytes()).decode_utf8()?.into_owned();
+    Ok(Url::parse(&url_str)?)
 }
 
-const YOUTUBE_VIDEO_INFO_URL: &str = "https://www.youtube.com/get_video_info";
+pub fn get_filename(i: &VideoInfo, f: &Format) -> String {
+    let title = if !i.title.is_empty() {
+        String::from(i.title.as_str())
+    } else {
+        String::from("no title")
+    };
+
+    format!("{} {}.{}", title, f.resolution, f.extension)
+}
 
 pub fn get_video_info(value: &str) -> Result<VideoInfo, Box<Error>> {
     let parse_url = match Url::parse(value) {
@@ -97,6 +100,12 @@ fn get_video_info_from_html(id: &str) -> Result<VideoInfo, Box<Error>> {
             return Err(From::from("get video info, status not found"));
         }
     };
+
+    if let Some(title) = info.get("title") {
+        video_info.title = title.to_string();
+    } else {
+        debug!("unable to extract title");
+    }
 
     if let Some(author) = info.get("author") {
         video_info.author = author.to_string();
@@ -165,9 +174,9 @@ fn parse_query(query_str: String) -> HashMap<String, String> {
     return parse_query.into_owned().collect::<HashMap<String, String>>();
 }
 
-fn get_client() -> Result<Client, Box<Error>> {
+pub fn get_client() -> Result<Client, Box<Error>> {
     let client: Client;
-    if let Ok(u) = env::var(super::YTDL_PROXY_URL) {
+    if let Ok(u) = env::var(YTDL_PROXY_URL) {
         client = request::Client::builder()?
             .proxy(request::Proxy::all(u.as_str())?)
             .build()?;
