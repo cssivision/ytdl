@@ -1,5 +1,5 @@
 # ytdl
-[![crate](https://img.shields.io/crates/v/ytdl.svg)](https://crates.io/crates/shadowsocks)
+[![crate](https://img.shields.io/crates/v/ytdl.svg)](https://crates.io/crates/ytdl)
 
 a simple cli for downloading youtube video.
 
