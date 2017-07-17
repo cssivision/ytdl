@@ -16,10 +16,11 @@ use std::env;
 use std::fs::OpenOptions;
 use std::io::Read;
 use std::io::Write;
+use std::str::FromStr;
 
 use clap::{App, AppSettings, Arg};
 use pbr::{ProgressBar, Units};
-use reqwest::header::ContentLength;
+use reqwest::header::{Headers, ContentLength, Range};
 
 mod format;
 mod video_info;
@@ -221,11 +222,17 @@ fn handler(identifier: &str, options: &Options) {
     };
 
     info!("download to {}", filename);
+    let mut headers = Headers::new();
+    if !options.byte_range.is_empty() {
+        let r = Range::from_str(&options.byte_range).expect("invalid range str");
+        headers.set(r);
+    }
 
     let client = video_info::get_client().expect("get request client fail");
     let mut resp = client
         .get(download_url.as_str())
         .expect("download fail")
+        .headers(headers)
         .send()
         .expect("download fail");
     
@@ -239,6 +246,7 @@ fn handler(identifier: &str, options: &Options) {
     pb.show_percent = true;
     pb.show_speed = true;
     pb.show_time_left = true;
+    pb.set_width(Some(100));
     let mut buf = [0; 128 * 1024];
 
     loop {
