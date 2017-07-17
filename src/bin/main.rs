@@ -107,7 +107,7 @@ fn main() {
         
     let matches = App::new("ytdl")
         .setting(AppSettings::ArgRequiredElseHelp)
-        .version("0.1.1")
+        .version("0.1.2")
         .about("download youtube videos")
         .args(&flags)
         .get_matches();
