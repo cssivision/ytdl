@@ -1,33 +1,32 @@
 extern crate ytdl;
 extern crate clap;
 #[macro_use]
+extern crate url;
 extern crate log;
 extern crate env_logger;
-extern crate url;
 extern crate reqwest;
 extern crate pbr;
 extern crate serde_json;
 
+use clap::{App, AppSettings, Arg};
+use pbr::{ProgressBar, Units};
+use reqwest::header::{ContentLength, Headers, Range};
 use std::env;
 use std::fs::OpenOptions;
 use std::io::Read;
 use std::io::Write;
 use std::str::FromStr;
 
-use clap::{App, AppSettings, Arg};
-use pbr::{ProgressBar, Units};
-use reqwest::header::{Headers, ContentLength, Range};
+use video_info::YTDL_PROXY_URL;
 
 use ytdl::format;
 use ytdl::video_info;
-
-use video_info::YTDL_PROXY_URL;
 
 #[derive(Debug)]
 struct Options {
     no_progress: bool,
     info_only: bool,
-    silent: bool, 
+    silent: bool,
     debug: bool,
     append: bool,
     json: bool,
@@ -55,9 +54,9 @@ fn main() {
             .value_name("PROXY_URL")
             .help("use proxy for the request")
             .takes_value(true),
-        Arg::with_name("no-progress")
-            .long("no-progress")
-            .help("write output to a file"),
+        Arg::with_name("no-progress").long("no-progress").help(
+            "write output to a file"
+        ),
         Arg::with_name("range")
             .short("r")
             .long("range")
@@ -72,14 +71,12 @@ fn main() {
             .short("-u")
             .long("download-url")
             .help("prints download url to stdout"),
-        Arg::with_name("json")
-            .short("j")
-            .long("json")
-            .help("print info json to stdout"),
-        Arg::with_name("debug")
-            .short("d")
-            .long("debug")
-            .help("output debug log"),
+        Arg::with_name("json").short("j").long("json").help(
+            "print info json to stdout"
+        ),
+        Arg::with_name("debug").short("d").long("debug").help(
+            "output debug log"
+        ),
         Arg::with_name("filter")
             .short("f")
             .long("filter")
@@ -87,24 +84,22 @@ fn main() {
             .multiple(true)
             .help("filter available formats, syntax: val1 val2 val3")
             .takes_value(true),
-        Arg::with_name("append")
-            .short("-a")
-            .long("--append")
-            .help("append to output file instead of overwriting"),
+        Arg::with_name("append").short("-a").long("--append").help(
+            "append to output file instead of overwriting"
+        ),
         Arg::with_name("start-offset")
             .long("start-offset")
             .value_name("STARTOFFSET")
             .help("offset the start of the video")
             .takes_value(true),
-        Arg::with_name("silent")
-            .short("s")
-            .long("silent")
-            .help("only output error, also diables progressbar"),
-        Arg::with_name("info")
-            .short("i")
-            .long("info")
-            .help("only output info")];
-        
+        Arg::with_name("silent").short("s").long("silent").help(
+            "only output error, also diables progressbar"
+        ),
+        Arg::with_name("info").short("i").long("info").help(
+            "only output info"
+        ),
+    ];
+
     let matches = App::new("ytdl")
         .setting(AppSettings::ArgRequiredElseHelp)
         .version("0.1.2")
@@ -112,10 +107,13 @@ fn main() {
         .args(&flags)
         .get_matches();
 
-    
+
     let mut filter = vec![];
     if matches.is_present("filter") {
-        filter = matches.values_of("filter").unwrap().map(|x| x.to_string()).collect();
+        filter = matches.values_of("filter")
+                        .unwrap()
+                        .map(|x| x.to_string())
+                        .collect();
     }
 
     let mut options = Options {
@@ -129,8 +127,13 @@ fn main() {
         filter: filter,
         output_file: matches.value_of("output").unwrap_or_default().to_string(),
         byte_range: matches.value_of("range").unwrap_or_default().to_string(),
-        start_offset: matches.value_of("start-offset").unwrap_or("0").parse::<i32>().unwrap(),
-        proxy_url: matches.value_of("proxy-url").unwrap_or_default().to_string(),
+        start_offset: matches.value_of("start-offset")
+                             .unwrap_or("0")
+                             .parse::<i32>()
+                             .unwrap(),
+        proxy_url: matches.value_of("proxy-url")
+                          .unwrap_or_default()
+                          .to_string(),
     };
 
     if !options.proxy_url.is_empty() {
@@ -163,39 +166,43 @@ fn handler(identifier: &str, options: &Options) {
     if options.info_only {
         println!("Author: {}", info.author);
         println!("Duration: {}s", info.duration);
-        return
+        return;
     } else if options.json {
         println!("{}", serde_json::to_string(&info).unwrap_or_default());
-        return 
+        return;
     }
 
     let formats = &info.formats;
-    for x in &options.filter {
-
-    }
+    for x in &options.filter {}
 
     if formats.len() == 0 {
         println!("no formats available that match criteria");
-        return 
+        return;
     }
 
     let mut download_url = match video_info::get_download_url(&formats[0]) {
         Ok(u) => u,
         Err(e) => {
             println!("unable to get download url: {}", e.to_string());
-            return
+            return;
         }
     };
 
     if options.start_offset != 0 {
-        download_url.query_pairs_mut().append_pair("begin", &format!("{}", &options.start_offset * 1000));
+        download_url.query_pairs_mut().append_pair(
+            "begin",
+            &format!(
+                "{}",
+                &options.start_offset * 1000,
+            ),
+        );
     }
 
     if options.download_url {
         println!("{}", download_url.as_str());
     }
 
-    
+
     let filename = if !options.output_file.is_empty() {
         options.output_file.clone()
     } else {
@@ -220,21 +227,22 @@ fn handler(identifier: &str, options: &Options) {
     info!("download to {}", filename);
     let mut headers = Headers::new();
     if !options.byte_range.is_empty() {
-        let r = Range::from_str(&format!("bytes={}", &options.byte_range)).expect("invalid range str");
+        let r = Range::from_str(&format!("bytes={}", &options.byte_range))
+            .expect("invalid range str");
         headers.set(r);
     }
 
     let client = video_info::get_client().expect("get request client fail");
-    let mut resp = client
-        .get(download_url.as_str())
-        .expect("download fail")
-        .headers(headers)
-        .send()
-        .expect("download fail");
-    
-    let file_size = resp.headers().get::<ContentLength>()
-                .map(|l| **l)
-                .unwrap_or(0);
+    let mut resp = client.get(download_url.as_str())
+                         .expect("download fail")
+                         .headers(headers)
+                         .send()
+                         .expect("download fail");
+
+    let file_size = resp.headers()
+                        .get::<ContentLength>()
+                        .map(|l| **l)
+                        .unwrap_or(0);
 
     let mut pb = ProgressBar::new(file_size);
     pb.format("╢▌▌░╟");
@@ -263,6 +271,4 @@ fn handler(identifier: &str, options: &Options) {
     println!("");
 }
 
-fn parse_filter() {
-    
-}
+fn parse_filter() {}

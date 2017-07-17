@@ -6,7 +6,7 @@ use std::env;
 use url::{Url, form_urlencoded};
 use url::percent_encoding::percent_decode;
 use format::Format;
-use reqwest::{self as request, StatusCode, Client};
+use reqwest::{Client, StatusCode, self as request};
 
 const YOUTUBE_VIDEO_INFO_URL: &str = "https://www.youtube.com/get_video_info";
 pub const YTDL_PROXY_URL: &str = "YTDL_PROXY_URL";
@@ -29,7 +29,9 @@ pub fn get_download_url(f: &Format) -> Result<Url, Box<Error>> {
         return Err(From::from("couldn't extract url from format"));
     };
 
-    let url_str = percent_decode(url_str.as_bytes()).decode_utf8()?.into_owned();
+    let url_str = percent_decode(url_str.as_bytes())
+        .decode_utf8()?
+        .into_owned();
     Ok(Url::parse(&url_str)?)
 }
 
@@ -48,7 +50,7 @@ pub fn get_video_info(value: &str) -> Result<VideoInfo, Box<Error>> {
         Ok(u) => u,
         Err(_) => {
             return get_video_info_from_html(value);
-        },
+        }
     };
 
     if parse_url.host_str() == Some("youtu.be") {
@@ -59,7 +61,11 @@ pub fn get_video_info(value: &str) -> Result<VideoInfo, Box<Error>> {
 }
 
 fn get_video_info_from_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
-    if let Some(video_id) = u.query_pairs().into_owned().collect::<HashMap<String, String>>().get("v") {
+    if let Some(video_id) = u.query_pairs()
+        .into_owned()
+        .collect::<HashMap<String, String>>()
+        .get("v")
+    {
         return get_video_info_from_html(video_id);
     }
     Err(From::from("invalid youtube url, no video id"))
@@ -90,12 +96,14 @@ fn get_video_info_from_html(id: &str) -> Result<VideoInfo, Box<Error>> {
         Some(s) => {
             if s == "fail" {
                 return Err(From::from(format!(
-                    "Error {}:{}", 
-                    info.get("errorcode").map(|s| s.as_str()).unwrap_or_default(), 
+                    "Error {}:{}",
+                    info.get("errorcode")
+                        .map(|s| s.as_str())
+                        .unwrap_or_default(),
                     info.get("reason").map(|s| s.as_str()).unwrap_or_default()
                 )));
-            } 
-        },
+            }
+        }
         None => {
             return Err(From::from("get video info, status not found"));
         }
@@ -146,7 +154,12 @@ fn get_video_info_from_html(id: &str) -> Result<VideoInfo, Box<Error>> {
 
         if let Ok(i) = itag.parse::<i32>() {
             if let Some(mut f) = Format::new(i) {
-                if query.get("conn").map(|s| s.as_str()).unwrap_or_default().starts_with("rtmp") {
+                if query
+                    .get("conn")
+                    .map(|s| s.as_str())
+                    .unwrap_or_default()
+                    .starts_with("rtmp")
+                {
                     f.meta.insert("rtmp".to_string(), "true".to_string());
                 }
 
@@ -167,7 +180,9 @@ fn get_video_info_from_html(id: &str) -> Result<VideoInfo, Box<Error>> {
 
 fn parse_query(query_str: String) -> HashMap<String, String> {
     let parse_query = form_urlencoded::parse(query_str.as_bytes());
-    return parse_query.into_owned().collect::<HashMap<String, String>>();
+    return parse_query
+        .into_owned()
+        .collect::<HashMap<String, String>>();
 }
 
 pub fn get_client() -> Result<Client, Box<Error>> {
@@ -179,6 +194,6 @@ pub fn get_client() -> Result<Client, Box<Error>> {
     } else {
         client = request::Client::new()?;
     }
-    
+
     Ok(client)
 }

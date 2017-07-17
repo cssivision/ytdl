@@ -11,12 +11,12 @@ pub const FORMAT_AUDIO_BITRATE_KEY: &str = "audbr";
 #[derive(Serialize, Deserialize, Default, Clone)]
 pub struct Format {
     pub itag: i32,
-	pub audio_bitrate: i32,
-	pub extension: String,
-	pub resolution: String,
-	pub video_encoding: String,
-	pub audio_encoding: String,
-	pub meta: HashMap<String, String>,
+    pub audio_bitrate: i32,
+    pub extension: String,
+    pub resolution: String,
+    pub video_encoding: String,
+    pub audio_encoding: String,
+    pub meta: HashMap<String, String>,
 }
 
 // FORMATS is a map of all itags and their formats
@@ -580,12 +580,12 @@ lazy_static! {
 		for v in data.iter() {
 			m.insert(v.0, v.1.clone());
 		}
-		m 
+		m
 	};
 }
 
 impl Format {
-	pub fn new(itag: i32) -> Option<Format> {
-		FORMATS.get(&itag).map(|f| f.clone())
-	}
+    pub fn new(itag: i32) -> Option<Format> {
+        FORMATS.get(&itag).map(|f| f.clone())
+    }
 }
