@@ -224,7 +224,7 @@ fn handler(identifier: &str, options: &Options) {
     info!("download to {}", filename);
     let mut headers = Headers::new();
     if !options.byte_range.is_empty() {
-        let r = Range::from_str(&options.byte_range).expect("invalid range str");
+        let r = Range::from_str(&format!("bytes={}", &options.byte_range)).expect("invalid range str");
         headers.set(r);
     }
 
@@ -263,6 +263,8 @@ fn handler(identifier: &str, options: &Options) {
             Err(e) => panic!("{}", e.to_string()),
         };
     }
+
+    println!("");
 }
 
 fn parse_filter() {
