@@ -1,7 +1,10 @@
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
+
 extern crate ytdl;
 extern crate clap;
-#[macro_use]
 extern crate url;
+#[macro_use]
 extern crate log;
 extern crate env_logger;
 extern crate reqwest;
@@ -108,14 +111,15 @@ fn main() {
         .get_matches();
 
 
-    let mut filter = vec![];
-    if matches.is_present("filter") {
-        filter = matches
+    let filter = if matches.is_present("filter") {
+        matches
             .values_of("filter")
             .unwrap()
             .map(|x| x.to_string())
-            .collect();
-    }
+            .collect()
+    } else {
+        vec![]
+    };
 
     let mut options = Options {
         no_progress: matches.is_present("no-progress"),
@@ -178,7 +182,7 @@ fn handler(identifier: &str, options: &Options) {
     let formats = &info.formats;
     for x in &options.filter {}
 
-    if formats.len() == 0 {
+    if formats.is_empty() {
         println!("no formats available that match criteria");
         return;
     }
