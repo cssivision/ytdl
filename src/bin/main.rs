@@ -1,16 +1,12 @@
+extern crate ytdl;
 extern crate clap;
 #[macro_use]
 extern crate log;
-#[macro_use]
-extern crate lazy_static;
 extern crate env_logger;
 extern crate url;
 extern crate reqwest;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate serde_json;
 extern crate pbr;
+extern crate serde_json;
 
 use std::env;
 use std::fs::OpenOptions;
@@ -22,8 +18,8 @@ use clap::{App, AppSettings, Arg};
 use pbr::{ProgressBar, Units};
 use reqwest::header::{Headers, ContentLength, Range};
 
-mod format;
-mod video_info;
+use ytdl::format;
+use ytdl::video_info;
 
 use video_info::YTDL_PROXY_URL;
 

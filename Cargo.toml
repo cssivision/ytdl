@@ -10,7 +10,7 @@ readme = "README.md"
 
 [[bin]]
 name = "ytdl"
-path = "src/main.rs"
+path = "src/bin/main.rs"
 
 [dependencies]
 clap = "2.25.0"
