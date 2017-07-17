@@ -110,10 +110,11 @@ fn main() {
 
     let mut filter = vec![];
     if matches.is_present("filter") {
-        filter = matches.values_of("filter")
-                        .unwrap()
-                        .map(|x| x.to_string())
-                        .collect();
+        filter = matches
+            .values_of("filter")
+            .unwrap()
+            .map(|x| x.to_string())
+            .collect();
     }
 
     let mut options = Options {
@@ -127,13 +128,15 @@ fn main() {
         filter: filter,
         output_file: matches.value_of("output").unwrap_or_default().to_string(),
         byte_range: matches.value_of("range").unwrap_or_default().to_string(),
-        start_offset: matches.value_of("start-offset")
-                             .unwrap_or("0")
-                             .parse::<i32>()
-                             .unwrap(),
-        proxy_url: matches.value_of("proxy-url")
-                          .unwrap_or_default()
-                          .to_string(),
+        start_offset: matches
+            .value_of("start-offset")
+            .unwrap_or("0")
+            .parse::<i32>()
+            .unwrap(),
+        proxy_url: matches
+            .value_of("proxy-url")
+            .unwrap_or_default()
+            .to_string(),
     };
 
     if !options.proxy_url.is_empty() {
@@ -233,16 +236,17 @@ fn handler(identifier: &str, options: &Options) {
     }
 
     let client = video_info::get_client().expect("get request client fail");
-    let mut resp = client.get(download_url.as_str())
-                         .expect("download fail")
-                         .headers(headers)
-                         .send()
-                         .expect("download fail");
+    let mut resp = client
+        .get(download_url.as_str())
+        .expect("download fail")
+        .headers(headers)
+        .send()
+        .expect("download fail");
 
     let file_size = resp.headers()
-                        .get::<ContentLength>()
-                        .map(|l| **l)
-                        .unwrap_or(0);
+        .get::<ContentLength>()
+        .map(|l| **l)
+        .unwrap_or(0);
 
     let mut pb = ProgressBar::new(file_size);
     pb.format("╢▌▌░╟");

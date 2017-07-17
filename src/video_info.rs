@@ -1,12 +1,12 @@
-use std::error::Error;
+use format::Format;
+use reqwest::{Client, StatusCode, self as request};
 use std::collections::HashMap;
-use std::io::Read;
 use std::env;
+use std::error::Error;
+use std::io::Read;
 
 use url::{Url, form_urlencoded};
 use url::percent_encoding::percent_decode;
-use format::Format;
-use reqwest::{Client, StatusCode, self as request};
 
 const YOUTUBE_VIDEO_INFO_URL: &str = "https://www.youtube.com/get_video_info";
 pub const YTDL_PROXY_URL: &str = "YTDL_PROXY_URL";
