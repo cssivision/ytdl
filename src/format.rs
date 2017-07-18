@@ -22,7 +22,7 @@ pub struct Format {
 // FORMATS is a map of all itags and their formats
 lazy_static! {
     static ref FORMATS: HashMap<i32, Format> = {
-        let mut m = HashMap::new();
+        let mut formats = HashMap::new();
 		let data = [
 			(5, Format{
 				extension:     "flv".to_string(),
@@ -578,14 +578,59 @@ lazy_static! {
 		];
 
 		for v in data.iter() {
-			m.insert(v.0, v.1.clone());
+			formats.insert(v.0, v.1.clone());
 		}
-		m
+		formats
 	};
+}
+
+#[derive(Debug)]
+pub enum FormatValue {
+    Integer(i32),
+    String(String),
+    Default,
 }
 
 impl Format {
     pub fn new(itag: i32) -> Option<Format> {
         FORMATS.get(&itag).map(|f| f.clone())
+    }
+
+    pub fn get_value(&self, key: &str) -> FormatValue {
+        match key {
+            FORMAT_RESOLUTION_KEY => FormatValue::String(self.resolution.to_string()),
+            FORMAT_AUDIO_BITRATE_KEY => FormatValue::Integer(self.audio_bitrate),
+            _ => FormatValue::Default,
+        }
+    }
+
+    pub fn compare_key(&self, other: &Self, key: &str) -> i32 {
+        match key {
+            FORMAT_RESOLUTION_KEY => {
+                let res = match self.get_value(key) {
+					FormatValue::String(v) => v,
+                    _ => "0".to_string()
+                };
+                let res1 = res.parse::<i32>().unwrap_or_default();
+				let res = match other.get_value(key) {
+					FormatValue::String(v) => v,
+                    _ => "0".to_string()
+                };
+				let res2 = res.parse::<i32>().unwrap_or_default();
+				res1 - res2
+            },
+            FORMAT_AUDIO_BITRATE_KEY => {
+				let bit1 = match self.get_value(key) {
+					FormatValue::Integer(v) => v,
+					_ => 0,
+				};
+				let bit2 = match other.get_value(key) {
+					FormatValue::Integer(v) => v,
+					_ => 0,
+				};
+				bit1 - bit2 
+			},
+			_ => 0,
+        }
     }
 }

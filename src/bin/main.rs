@@ -16,14 +16,11 @@ use pbr::{ProgressBar, Units};
 use reqwest::header::{ContentLength, Headers, Range};
 use std::env;
 use std::fs::OpenOptions;
-use std::io::Read;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::str::FromStr;
-
-use video_info::YTDL_PROXY_URL;
-
-use ytdl::format;
-use ytdl::video_info;
+use ytdl::format::{self, Format};
+use ytdl::format_list::FormatList;
+use ytdl::video_info::{self, YTDL_PROXY_URL};
 
 #[derive(Debug)]
 struct Options {
@@ -67,7 +64,7 @@ fn main() {
             .help("download a specific range of bytes of the video, [start]-[end]")
             .takes_value(true),
         Arg::with_name("url")
-            .help("youtube url")
+            .help("youtube video url, video id")
             .required(true)
             .index(1),
         Arg::with_name("download-url")
@@ -279,4 +276,25 @@ fn handler(identifier: &str, options: &Options) {
     println!("");
 }
 
-fn parse_filter() {}
+fn filter_formats(filters: &Vec<String>, formats: &FormatList) -> FormatList {
+    for fi in filters {
+        let f = parse_filter(fi.as_str());
+    }
+
+    unimplemented!()
+}
+
+fn parse_filter(filter_str: &str) -> Box<FnOnce(FormatList) -> FormatList> {
+    let filter_str = filter_str.trim();
+    match filter_str {
+        "best" | "worst" => {
+            return Box::new(|x| {
+                x
+            });
+        },
+        _ => {
+
+        }
+    }
+    unimplemented!()   
+}
