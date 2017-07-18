@@ -24,18 +24,14 @@ FLAGS:
     -V, --version         Prints version information
 
 OPTIONS:
-    -f, --filter <FILTER>...
-            filter available formats, syntax: val1 val2 val3
-
+    -f, --filter <FILTER>...            filter available formats, syntax: val1 val2 val3
     -o, --output <FILE>                 write output to a file
     -p, --proxy-url <PROXY_URL>         use proxy for the request
-    -r, --range <RANGE>
-            download a specific range of bytes of the video, [start]-[end]
-
+    -r, --range <RANGE>                 download a specific range of bytes of the video, [start]-[end]
         --start-offset <STARTOFFSET>    offset the start of the video
 
 ARGS:
-    <url>    youtube url
+    <url>    youtube video url, video id
 ```
 
 # Licenses
