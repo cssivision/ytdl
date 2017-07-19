@@ -18,8 +18,8 @@ use std::env;
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
 use std::str::FromStr;
-use ytdl::format::{self, Format};
-use ytdl::format_list::FormatList;
+use ytdl::format;
+use ytdl::format_list::{Filter, FormatList};
 use ytdl::video_info::{self, YTDL_PROXY_URL};
 
 #[derive(Debug)]
@@ -176,8 +176,7 @@ fn handler(identifier: &str, options: &Options) {
         return;
     }
 
-    let formats = &info.formats;
-    for x in &options.filter {}
+    let formats = filter_formats(&options.filter, &info.formats);
 
     if formats.is_empty() {
         println!("no formats available that match criteria");
@@ -277,24 +276,41 @@ fn handler(identifier: &str, options: &Options) {
 }
 
 fn filter_formats(filters: &Vec<String>, formats: &FormatList) -> FormatList {
+    let mut formats = formats.clone();
     for fi in filters {
-        let f = parse_filter(fi.as_str());
+        let filter_str = fi.as_str();
+        formats = match filter_str {
+            "best" | "worst" => {
+                formats
+                    .extremes(format::FORMAT_RESOLUTION_KEY, filter_str == "best")
+                    .extremes(format::FORMAT_AUDIO_BITRATE_KEY, filter_str == "best")
+            }
+            "best-video" | "worst-video" => {
+                formats.extremes(
+                    format::FORMAT_RESOLUTION_KEY,
+                    filter_str.starts_with("best"),
+                )
+            }
+            "best-audio" | "worst-audio" => {
+                formats.extremes(
+                    format::FORMAT_AUDIO_BITRATE_KEY,
+                    filter_str.starts_with("best"),
+                )
+            }
+            _ => {
+                let split = filter_str.splitn(2, ":").collect::<Vec<&str>>();
+                if split.len() != 2 {
+                    panic!("invalid filter key");
+                }
+
+                let mut key = split[0].to_string();
+                let start = if key.starts_with("!") { 1 } else { 0 };
+
+                let key: String = key.drain(start..).collect::<String>();
+                let value = split[1].trim();
+                formats
+            }
+        };
     }
-
-    unimplemented!()
-}
-
-fn parse_filter(filter_str: &str) -> Box<FnOnce(FormatList) -> FormatList> {
-    let filter_str = filter_str.trim();
-    match filter_str {
-        "best" | "worst" => {
-            return Box::new(|x| {
-                x
-            });
-        },
-        _ => {
-
-        }
-    }
-    unimplemented!()   
+    formats
 }

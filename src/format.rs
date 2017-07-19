@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 pub const FORMAT_EXTENSION_KEY: &str = "ext";
@@ -598,39 +599,51 @@ impl Format {
 
     pub fn get_value(&self, key: &str) -> FormatValue {
         match key {
-            FORMAT_RESOLUTION_KEY => FormatValue::String(self.resolution.to_string()),
+            FORMAT_RESOLUTION_KEY => FormatValue::String(self.resolution.clone()),
+            FORMAT_EXTENSION_KEY => FormatValue::String(self.extension.clone()),
+            FORMAT_VIDEO_ENCODING_KEY => FormatValue::String(self.video_encoding.clone()),
+            FORMAT_AUDIO_ENCODING_KEY => FormatValue::String(self.audio_encoding.clone()),
+            FORMAT_ITAG_KEY => FormatValue::Integer(self.itag),
             FORMAT_AUDIO_BITRATE_KEY => FormatValue::Integer(self.audio_bitrate),
             _ => FormatValue::Default,
         }
     }
 
-    pub fn compare_key(&self, other: &Self, key: &str) -> i32 {
-        match key {
+    pub fn compare_key(&self, other: &Self, key: &str) -> Ordering {
+        let r = match key {
             FORMAT_RESOLUTION_KEY => {
                 let res = match self.get_value(key) {
-					FormatValue::String(v) => v,
-                    _ => "0".to_string()
+                    FormatValue::String(v) => v.trim_right_matches("p").to_string(),
+                    _ => "0".to_string(),
                 };
                 let res1 = res.parse::<i32>().unwrap_or_default();
-				let res = match other.get_value(key) {
-					FormatValue::String(v) => v,
-                    _ => "0".to_string()
+                let res = match other.get_value(key) {
+                    FormatValue::String(v) => v.trim_right_matches("p").to_string(),
+                    _ => "0".to_string(),
                 };
-				let res2 = res.parse::<i32>().unwrap_or_default();
-				res1 - res2
-            },
+                let res2 = res.parse::<i32>().unwrap_or_default();
+                res1 - res2
+            }
             FORMAT_AUDIO_BITRATE_KEY => {
-				let bit1 = match self.get_value(key) {
-					FormatValue::Integer(v) => v,
-					_ => 0,
-				};
-				let bit2 = match other.get_value(key) {
-					FormatValue::Integer(v) => v,
-					_ => 0,
-				};
-				bit1 - bit2 
-			},
-			_ => 0,
+                let bit1 = match self.get_value(key) {
+                    FormatValue::Integer(v) => v,
+                    _ => 0,
+                };
+                let bit2 = match other.get_value(key) {
+                    FormatValue::Integer(v) => v,
+                    _ => 0,
+                };
+                bit1 - bit2
+            }
+            _ => 0,
+        };
+
+        if r > 0 {
+            Ordering::Less
+        } else if r == 0 {
+            Ordering::Equal
+        } else {
+            Ordering::Greater
         }
     }
 }
