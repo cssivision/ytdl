@@ -309,6 +309,15 @@ fn filter_formats(filters: &Vec<String>, formats: &FormatList) -> FormatList {
 
                 let key: String = key.drain(start..).collect::<String>();
                 let value = split[1].trim();
+                if value == "best" || value == "worst" {
+                    let f = formats.extremes(&key, value == "best");
+                    formats = formats.subtract(&f);
+                    return formats;
+                }
+                let mut vals = value.split(",").collect::<Vec<&str>>();
+                for i in 0..vals.len() {
+                    vals[i] = vals[i].trim();
+                }
                 formats
             }
         };
