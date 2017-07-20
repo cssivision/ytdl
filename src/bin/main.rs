@@ -206,11 +206,12 @@ fn handler(identifier: &str, options: &Options) {
     }
 
 
-    let filename = if !options.output_file.is_empty() {
+    let mut filename = if !options.output_file.is_empty() {
         options.output_file.clone()
     } else {
         video_info::get_filename(&info, &formats[0])
     };
+    filename = filename.replace("/", "-");
 
     let mut file = if options.append {
         OpenOptions::new()
