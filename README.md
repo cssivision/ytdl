@@ -4,7 +4,15 @@
 a simple cli for downloading youtube video.
 
 # Installation
-prebuild binary, [here](https://github.com/cssivision/ytdl/releases).
+## macos
+```sh
+wget https://github.com/cssivision/ytdl/files/1164955/ytdl.tar.gz
+```
+## linux
+```sh
+wget https://github.com/cssivision/ytdl/files/1165189/ytdl-linux.tar.gz
+```
+or [here](https://github.com/cssivision/ytdl/releases), also can use cargo.
 ```sh
 cargo install ytdl
 ```
