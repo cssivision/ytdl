@@ -4,6 +4,7 @@
 a simple cli for downloading youtube video.
 
 # Installation
+prebuild binary, [here](https://github.com/cssivision/ytdl/releases).
 ```sh
 cargo install ytdl
 ```
