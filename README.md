@@ -31,7 +31,7 @@ OPTIONS:
         --start-offset <STARTOFFSET>    offset the start of the video
 
 ARGS:
-    <url>    youtube video url, video id
+    <url>    youtube video url, short url or video id
 ```
 
 # Licenses

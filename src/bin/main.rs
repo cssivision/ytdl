@@ -54,29 +54,33 @@ fn main() {
             .value_name("PROXY_URL")
             .help("use proxy for the request")
             .takes_value(true),
-        Arg::with_name("no-progress").long("no-progress").help(
-            "write output to a file"
-        ),
+        Arg::with_name("no-progress")
+            .long("no-progress")
+            .help("write output to a file"),
         Arg::with_name("range")
             .short("r")
             .long("range")
             .value_name("RANGE")
-            .help("download a specific range of bytes of the video, [start]-[end]")
+            .help(
+                "download a specific range of bytes of the video, [start]-[end]",
+            )
             .takes_value(true),
         Arg::with_name("url")
-            .help("youtube video url, video id")
+            .help("youtube video url, short url or video id")
             .required(true)
             .index(1),
         Arg::with_name("download-url")
             .short("-u")
             .long("download-url")
             .help("prints download url to stdout"),
-        Arg::with_name("json").short("j").long("json").help(
-            "print info json to stdout"
-        ),
-        Arg::with_name("debug").short("d").long("debug").help(
-            "output debug log"
-        ),
+        Arg::with_name("json")
+            .short("j")
+            .long("json")
+            .help("print info json to stdout"),
+        Arg::with_name("debug")
+            .short("d")
+            .long("debug")
+            .help("output debug log"),
         Arg::with_name("filter")
             .short("f")
             .long("filter")
@@ -84,25 +88,28 @@ fn main() {
             .multiple(true)
             .help("filter available formats, syntax: val1 val2 val3")
             .takes_value(true),
-        Arg::with_name("append").short("-a").long("--append").help(
-            "append to output file instead of overwriting"
-        ),
+        Arg::with_name("append")
+            .short("-a")
+            .long("--append")
+            .help("append to output file instead of overwriting"),
         Arg::with_name("start-offset")
             .long("start-offset")
             .value_name("STARTOFFSET")
             .help("offset the start of the video")
             .takes_value(true),
-        Arg::with_name("silent").short("s").long("silent").help(
-            "only output error, also diables progressbar"
-        ),
-        Arg::with_name("info").short("i").long("info").help(
-            "only output info"
-        ),
+        Arg::with_name("silent")
+            .short("s")
+            .long("silent")
+            .help("only output error, also diables progressbar"),
+        Arg::with_name("info")
+            .short("i")
+            .long("info")
+            .help("only output info"),
     ];
 
     let matches = App::new("ytdl")
         .setting(AppSettings::ArgRequiredElseHelp)
-        .version("0.1.2")
+        .version("0.1.3")
         .about("download youtube videos")
         .args(&flags)
         .get_matches();
@@ -177,7 +184,6 @@ fn handler(identifier: &str, options: &Options) {
     }
 
     let formats = filter_formats(&options.filter, &info.formats);
-
     if formats.is_empty() {
         println!("no formats available that match criteria");
         return;
@@ -192,13 +198,9 @@ fn handler(identifier: &str, options: &Options) {
     };
 
     if options.start_offset != 0 {
-        download_url.query_pairs_mut().append_pair(
-            "begin",
-            &format!(
-                "{}",
-                &options.start_offset * 1000,
-            ),
-        );
+        download_url
+            .query_pairs_mut()
+            .append_pair("begin", &format!("{}", &options.start_offset * 1000,));
     }
 
     if options.download_url {
@@ -231,8 +233,8 @@ fn handler(identifier: &str, options: &Options) {
     info!("download to {}", filename);
     let mut headers = Headers::new();
     if !options.byte_range.is_empty() {
-        let r = Range::from_str(&format!("bytes={}", &options.byte_range))
-            .expect("invalid range str");
+        let r =
+            Range::from_str(&format!("bytes={}", &options.byte_range)).expect("invalid range str");
         headers.set(r);
     }
 
@@ -305,8 +307,8 @@ fn filter_formats(filters: &Vec<String>, formats: &FormatList) -> FormatList {
                 }
 
                 let mut key = split[0].to_string();
-                let start = if key.starts_with("!") { 1 } else { 0 };
-
+                let exclude = key.starts_with("!");
+                let start = if exclude { 1 } else { 0 };
                 let key: String = key.drain(start..).collect::<String>();
                 let value = split[1].trim();
                 if value == "best" || value == "worst" {
@@ -318,7 +320,12 @@ fn filter_formats(filters: &Vec<String>, formats: &FormatList) -> FormatList {
                 for i in 0..vals.len() {
                     vals[i] = vals[i].trim();
                 }
-                formats
+                let f = formats.filter(&key, &vals);
+                if exclude {
+                    formats.subtract(&f)
+                } else {
+                    f
+                }
             }
         };
     }

@@ -1,6 +1,6 @@
 use format::Format;
-use std::cmp::Ordering;
 use format::FormatValue;
+use std::cmp::Ordering;
 
 pub type FormatList = Vec<Format>;
 pub trait Filter {
@@ -49,26 +49,24 @@ impl Filter for FormatList {
                 dst.push(f1.clone());
             }
         }
-        dst 
+        dst
     }
 
     fn filter(&self, key: &str, values: &Vec<&str>) -> Self {
         let mut dst: FormatList = vec![];
         for v in values {
             for f in self {
-                match f.get_value(key) {
-                    FormatValue::Integer(i) => {
+                let value = match f.get_value(key) {
+                    FormatValue::Integer(i) => format!("{}", i),
+                    FormatValue::String(s) => format!("{}", s),
+                    FormatValue::Default => format!(""),
+                };
 
-                    },
-                    FormatValue::String(s) => {
-
-                    },
-                    FormatValue::Default => {
-
-                    },
+                if value == format!("{}", v) {
+                    dst.push(f.clone());
                 }
             }
         }
-        dst 
+        dst
     }
 }
