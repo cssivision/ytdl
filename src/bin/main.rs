@@ -209,7 +209,7 @@ fn handler(identifier: &str, options: &Options) {
 
 
     let mut filename = if !options.output_file.is_empty() {
-        options.output_file.clone()
+        format!("{}.{}", options.output_file, &formats[0].extension)
     } else {
         video_info::get_filename(&info, &formats[0])
     };
