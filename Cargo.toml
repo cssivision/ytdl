@@ -13,7 +13,7 @@ name = "ytdl"
 path = "src/bin/main.rs"
 
 [dependencies]
-clippy = {version = "*", optional = true}
+clippy = {version = "0.0.144", optional = true}
 clap = "2.25.0"
 log = "0.3.8"
 env_logger = "0.4.3"
