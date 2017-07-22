@@ -114,17 +114,6 @@ fn main() {
         .args(&flags)
         .get_matches();
 
-
-    let filter = if matches.is_present("filter") {
-        matches
-            .values_of("filter")
-            .unwrap()
-            .map(|x| x.to_string())
-            .collect()
-    } else {
-        vec![]
-    };
-
     let mut options = Options {
         no_progress: matches.is_present("no-progress"),
         info_only: matches.is_present("info"),
@@ -133,7 +122,11 @@ fn main() {
         append: matches.is_present("append"),
         json: matches.is_present("json"),
         download_url: matches.is_present("download-url"),
-        filter: filter,
+        filter: matches
+            .values_of("filter")
+            .unwrap_or_default()
+            .map(|x| x.to_string())
+            .collect(),
         output_file: matches.value_of("output").unwrap_or_default().to_string(),
         byte_range: matches.value_of("range").unwrap_or_default().to_string(),
         start_offset: matches
