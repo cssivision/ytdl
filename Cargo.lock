@@ -7,6 +7,7 @@ dependencies = [
  "env_logger 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "openssl-probe 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pbr 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.10 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -412,6 +413,11 @@ dependencies = [
  "libc 0.2.26 (registry+https://github.com/rust-lang/crates.io-index)",
  "openssl-sys 0.9.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "openssl-probe"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "openssl-sys"
@@ -920,6 +926,7 @@ dependencies = [
 "checksum num-traits 0.1.39 (registry+https://github.com/rust-lang/crates.io-index)" = "1708c0628602a98b52fad936cf3edb9a107af06e52e49fdf0707e884456a6af6"
 "checksum num_cpus 1.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "aec53c34f2d0247c5ca5d32cca1478762f301740468ee9ee6dcb7a0dd7a0c584"
 "checksum openssl 0.9.14 (registry+https://github.com/rust-lang/crates.io-index)" = "11ba043cb65fc9af71a431b8a36ffe8686cd4751cdf70a473ec1d01066ac7e41"
+"checksum openssl-probe 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d98df0270d404ccd3c050a41d579c52d1db15375168bb3471e04ec0f5f378daf"
 "checksum openssl-sys 0.9.14 (registry+https://github.com/rust-lang/crates.io-index)" = "236c718c2e2c2b58a546d86ffea5194400bb15dbe01ca85325ffd357b03cf66c"
 "checksum pbr 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e048e3afebb6c454bb1c5d0fe73fda54698b4715d78ed8e7302447c37736d23a"
 "checksum percent-encoding 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "de154f638187706bde41d9b4738748933d64e6b37bdbffc0b47a97d16a6ae356"

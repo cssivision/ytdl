@@ -10,6 +10,7 @@ extern crate env_logger;
 extern crate reqwest;
 extern crate pbr;
 extern crate serde_json;
+extern crate openssl_probe;
 
 use clap::{App, AppSettings, Arg};
 use pbr::{ProgressBar, Units};
@@ -39,7 +40,8 @@ struct Options {
 }
 
 fn main() {
-    env_logger::init().expect("env logger init fail");
+    openssl_probe::init_ssl_cert_env_vars();
+    env_logger::init();
 
     let flags = vec![
         Arg::with_name("output")

@@ -186,14 +186,12 @@ fn parse_query(query_str: String) -> HashMap<String, String> {
 }
 
 pub fn get_client() -> Result<Client, Box<Error>> {
-    let client: Client;
-    if let Ok(u) = env::var(YTDL_PROXY_URL) {
-        client = request::Client::builder()?
+    let client = if let Ok(u) = env::var(YTDL_PROXY_URL) {
+        request::Client::builder()?
             .proxy(request::Proxy::all(u.as_str())?)
-            .build()?;
+            .build()?
     } else {
-        client = request::Client::new()?;
-    }
-
+        request::Client::new()?
+    };
     Ok(client)
 }
