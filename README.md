@@ -5,19 +5,28 @@
 a simple cli for downloading youtube video.
 
 # Installation
-## macos
-```sh
-wget https://github.com/cssivision/ytdl/files/1164955/ytdl.tar.gz
-```
-## linux
-```sh
-wget https://github.com/cssivision/ytdl/files/1165189/ytdl-linux.tar.gz
-```
-or [here](https://github.com/cssivision/ytdl/releases), also can use cargo.
+use cargo.
 ```sh
 cargo install ytdl
 ```
+
+Fetch [lastest releases](https://github.com/cssivision/ytdl/releases).
+## macos
+```sh
+wget https://github.com/cssivision/ytdl/releases/download/v0.1.3/ytdl
+chmod +x ytdl
+```
+## linux
+```sh
+wget https://github.com/cssivision/ytdl/releases/download/v0.1.3/ytdl-linux
+chmod +x ytdl-linux
+```
 # Usage 
+## example
+```sh
+ytdl https://www.youtube.com/watch?v=GbWECt0M3CI
+```
+
 ```
 USAGE:
     ytdl [FLAGS] [OPTIONS] <url>
