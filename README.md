@@ -13,12 +13,12 @@ cargo install ytdl
 Fetch [lastest releases](https://github.com/cssivision/ytdl/releases).
 ## macos
 ```sh
-https://github.com/cssivision/ytdl/releases/download/v0.1.4/ytdl
+wget https://github.com/cssivision/ytdl/releases/download/v0.1.4/ytdl
 chmod +x ytdl
 ```
 ## linux
 ```sh
-https://github.com/cssivision/ytdl/releases/download/v0.1.4/ytdl-linux
+wget https://github.com/cssivision/ytdl/releases/download/v0.1.4/ytdl-linux
 chmod +x ytdl-linux
 ```
 # Usage
