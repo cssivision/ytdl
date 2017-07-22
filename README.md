@@ -21,7 +21,7 @@ chmod +x ytdl
 wget https://github.com/cssivision/ytdl/releases/download/v0.1.3/ytdl-linux
 chmod +x ytdl-linux
 ```
-may get a openssl issue, cross compilation for static link binary is a big pain especially when relative to openssl, trying to fix this.
+may get a openssl issue, cross compilation for static link binary is a big pain especially when it's related to openssl, trying to fix this.
 # Usage 
 ## example
 ```sh
