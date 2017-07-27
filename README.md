@@ -52,6 +52,9 @@ ARGS:
     <url>    youtube video url, short url or video id
 ```
 
+### `--proxy-url`
+if you can't access `youtube`, but you have a proxy which can access `youtube`, you can use the option in command line, for example `ytdl GbWECt0M3CI --proxy-url http://127.0.0.1:1087`.
+
 # Licenses
 
 All source code is licensed under the [MIT License](https://github.com/cssivision/ytdl/blob/master/LICENSE).
