@@ -41,7 +41,7 @@ struct Options {
 
 fn main() {
     openssl_probe::init_ssl_cert_env_vars();
-    env_logger::init();
+    env_logger::init().unwrap();
 
     let flags = vec![
         Arg::with_name("output")
