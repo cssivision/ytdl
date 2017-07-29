@@ -1,4 +1,5 @@
 # ytdl
+[![Build Status](https://img.shields.io/travis/cssivision/ytdl.svg?style=flat-square)](https://travis-ci.org/cssivision/ytdl)
 [![crate](https://img.shields.io/crates/v/ytdl.svg)](https://crates.io/crates/ytdl)
 [![License](http://img.shields.io/badge/license-mit-blue.svg)](https://github.com/cssivision/ytdl/blob/master/LICENSE)
 
