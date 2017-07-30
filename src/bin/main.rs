@@ -174,7 +174,10 @@ fn handler(identifier: &str, options: &Options) {
         println!("Duration: {}s", info.duration);
         return;
     } else if options.json {
-        println!("{}", serde_json::to_string(&info).unwrap_or_default());
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&info).unwrap_or_default()
+        );
         return;
     }
 
