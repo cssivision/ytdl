@@ -9,7 +9,6 @@ use url::{Url, form_urlencoded};
 use url::percent_encoding::percent_decode;
 
 const YOUTUBE_VIDEO_INFO_URL: &str = "https://www.youtube.com/get_video_info";
-pub const YTDL_PROXY_URL: &str = "YTDL_PROXY_URL";
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct VideoInfo {
