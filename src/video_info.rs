@@ -1,9 +1,9 @@
 use format::Format;
 use reqwest::{Client, StatusCode, self as request};
 use std::collections::HashMap;
-use std::env;
 use std::error::Error;
 use std::io::Read;
+use env_proxy;
 
 use url::{Url, form_urlencoded};
 use url::percent_encoding::percent_decode;
@@ -83,7 +83,7 @@ fn get_video_info_from_short_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
 fn get_video_info_from_html(id: &str) -> Result<VideoInfo, Box<Error>> {
     let info_url = format!("{}?video_id={}", YOUTUBE_VIDEO_INFO_URL, id);
     debug!("{}", info_url);
-    let mut resp = get_client()?.get(info_url.as_str())?.send()?;
+    let mut resp = get_client(info_url.as_str())?.get(info_url.as_str())?.send()?;
     if resp.status() != StatusCode::Ok {
         return Err(From::from("video info response invalid status code"));
     }
@@ -185,8 +185,8 @@ fn parse_query(query_str: String) -> HashMap<String, String> {
         .collect::<HashMap<String, String>>();
 }
 
-pub fn get_client() -> Result<Client, Box<Error>> {
-    let client = if let Ok(u) = env::var(YTDL_PROXY_URL) {
+pub fn get_client(s: &str) -> Result<Client, Box<Error>> {
+    let client = if let Some(u) = env_proxy::for_url_str(s) {
         request::Client::builder()?
             .proxy(request::Proxy::all(u.as_str())?)
             .build()?

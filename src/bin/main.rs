@@ -11,17 +11,17 @@ extern crate reqwest;
 extern crate pbr;
 extern crate serde_json;
 extern crate openssl_probe;
+extern crate env_proxy;
 
 use clap::{App, AppSettings, Arg};
 use pbr::{ProgressBar, Units};
 use reqwest::header::{ContentLength, Headers, Range};
-use std::env;
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
 use std::str::FromStr;
 use ytdl::format;
 use ytdl::format_list::{Filter, FormatList};
-use ytdl::video_info::{self, YTDL_PROXY_URL};
+use ytdl::video_info;
 
 #[derive(Debug)]
 struct Options {
@@ -49,12 +49,6 @@ fn main() {
             .long("output")
             .value_name("FILE")
             .help("write output to a file")
-            .takes_value(true),
-        Arg::with_name("proxy-url")
-            .short("p")
-            .long("proxy-url")
-            .value_name("PROXY_URL")
-            .help("use proxy for the request")
             .takes_value(true),
         Arg::with_name("no-progress")
             .long("no-progress")
@@ -141,10 +135,6 @@ fn main() {
             .unwrap_or_default()
             .to_string(),
     };
-
-    if !options.proxy_url.is_empty() {
-        env::set_var(YTDL_PROXY_URL, &options.proxy_url);
-    }
 
     let identifier = matches.value_of("url").unwrap_or_default();
     if options.filter.is_empty() {
@@ -236,7 +226,7 @@ fn handler(identifier: &str, options: &Options) {
         headers.set(r);
     }
 
-    let client = video_info::get_client().expect("get request client fail");
+    let client = video_info::get_client(download_url.as_str()).expect("get request client fail");
     let mut resp = client
         .get(download_url.as_str())
         .expect("download fail")

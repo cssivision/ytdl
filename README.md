@@ -45,16 +45,12 @@ FLAGS:
 OPTIONS:
     -f, --filter <FILTER>...            filter available formats, syntax: val1 val2 val3
     -o, --output <FILE>                 write output to a file
-    -p, --proxy-url <PROXY_URL>         use proxy for the request
     -r, --range <RANGE>                 download a specific range of bytes of the video, [start]-[end]
         --start-offset <STARTOFFSET>    offset the start of the video
 
 ARGS:
     <url>    youtube video url, short url or video id
 ```
-
-### `--proxy-url`
-if you can't access `youtube`, but you have a proxy which can access `youtube`, you can use the option in command line, for example `ytdl GbWECt0M3CI --proxy-url http://127.0.0.1:1087`.
 
 # Licenses
 

@@ -8,7 +8,11 @@ extern crate url;
 extern crate log;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate error_chain;
+extern crate env_proxy;
 
 pub mod video_info;
 pub mod format;
 pub mod format_list;
+pub mod error;
