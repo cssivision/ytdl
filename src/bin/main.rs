@@ -36,7 +36,6 @@ struct Options {
     byte_range: String,
     output_file: String,
     start_offset: i32,
-    proxy_url: String,
 }
 
 fn main() {
@@ -128,12 +127,8 @@ fn main() {
         start_offset: matches
             .value_of("start-offset")
             .unwrap_or("0")
-            .parse::<i32>()
+            .parse()
             .unwrap(),
-        proxy_url: matches
-            .value_of("proxy-url")
-            .unwrap_or_default()
-            .to_string(),
     };
 
     let identifier = matches.value_of("url").unwrap_or_default();
@@ -251,7 +246,10 @@ fn handler(identifier: &str, options: &Options) {
     loop {
         match resp.read(&mut buf) {
             Ok(len) => {
-                file.write_all(&buf[..len]).expect("write to file fail");
+                if file.write_all(&buf[..len]).is_err() {
+                    println!("write to file fail");
+                    return;
+                }
                 if !options.silent && !options.no_progress {
                     pb.add(len as u64);
                 }
@@ -259,7 +257,10 @@ fn handler(identifier: &str, options: &Options) {
                     break;
                 }
             }
-            Err(e) => panic!("{}", e.to_string()),
+            Err(_) => {
+                println!("stream pipe file error");
+                return;
+            },
         };
     }
 

@@ -1,7 +1,7 @@
 use format::Format;
+use errors::*;
 use reqwest::{Client, StatusCode, self as request};
 use std::collections::HashMap;
-use std::error::Error;
 use std::io::Read;
 use env_proxy;
 
@@ -21,11 +21,11 @@ pub struct VideoInfo {
     pub duration: i32,
 }
 
-pub fn get_download_url(f: &Format) -> Result<Url, Box<Error>> {
+pub fn get_download_url(f: &Format) -> Result<Url> {
     let url_str = if let Some(u) = f.meta.get("url") {
         u.as_str()
     } else {
-        return Err(From::from("couldn't extract url from format"));
+        bail!("couldn't extract url from format")
     };
 
     let url_str = percent_decode(url_str.as_bytes())
@@ -36,15 +36,15 @@ pub fn get_download_url(f: &Format) -> Result<Url, Box<Error>> {
 
 pub fn get_filename(i: &VideoInfo, f: &Format) -> String {
     let title = if !i.title.is_empty() {
-        String::from(i.title.as_str())
+        i.title.to_owned()
     } else {
-        String::from("no title")
+        "no title".to_string()
     };
 
     format!("{} {}.{}", title, f.resolution, f.extension)
 }
 
-pub fn get_video_info(value: &str) -> Result<VideoInfo, Box<Error>> {
+pub fn get_video_info(value: &str) -> Result<VideoInfo> {
     let parse_url = match Url::parse(value) {
         Ok(u) => u,
         Err(_) => {
@@ -59,7 +59,7 @@ pub fn get_video_info(value: &str) -> Result<VideoInfo, Box<Error>> {
     get_video_info_from_url(&parse_url)
 }
 
-fn get_video_info_from_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
+fn get_video_info_from_url(u: &Url) -> Result<VideoInfo> {
     if let Some(video_id) = u.query_pairs()
         .into_owned()
         .collect::<HashMap<String, String>>()
@@ -67,24 +67,24 @@ fn get_video_info_from_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
     {
         return get_video_info_from_html(video_id);
     }
-    Err(From::from("invalid youtube url, no video id"))
+    bail!("invalid youtube url, no video id");
 }
 
-fn get_video_info_from_short_url(u: &Url) -> Result<VideoInfo, Box<Error>> {
+fn get_video_info_from_short_url(u: &Url) -> Result<VideoInfo> {
     let path = u.path().trim_left_matches("/");
     if path.len() > 0 {
         return get_video_info_from_html(path);
     }
 
-    Err(From::from("could not parse short URL"))
+    bail!("could not parse short URL");
 }
 
-fn get_video_info_from_html(id: &str) -> Result<VideoInfo, Box<Error>> {
+fn get_video_info_from_html(id: &str) -> Result<VideoInfo> {
     let info_url = format!("{}?video_id={}", YOUTUBE_VIDEO_INFO_URL, id);
     debug!("{}", info_url);
     let mut resp = get_client(info_url.as_str())?.get(info_url.as_str())?.send()?;
     if resp.status() != StatusCode::Ok {
-        return Err(From::from("video info response invalid status code"));
+        bail!("video info response invalid status code");
     }
 
     let mut info = String::new();
@@ -94,13 +94,13 @@ fn get_video_info_from_html(id: &str) -> Result<VideoInfo, Box<Error>> {
     match info.get("status") {
         Some(s) => {
             if s == "fail" {
-                return Err(From::from(format!(
+                bail!(format!(
                     "Error {}:{}",
                     info.get("errorcode")
                         .map(|s| s.as_str())
                         .unwrap_or_default(),
                     info.get("reason").map(|s| s.as_str()).unwrap_or_default()
-                )));
+                ));
             }
         }
         None => {
@@ -184,7 +184,7 @@ fn parse_query(query_str: String) -> HashMap<String, String> {
         .collect::<HashMap<String, String>>();
 }
 
-pub fn get_client(s: &str) -> Result<Client, Box<Error>> {
+pub fn get_client(s: &str) -> Result<Client> {
     let client = if let Some(u) = env_proxy::for_url_str(s) {
         request::Client::builder()?
             .proxy(request::Proxy::all(u.as_str())?)
