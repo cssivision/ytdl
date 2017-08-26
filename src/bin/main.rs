@@ -40,7 +40,7 @@ struct Options {
 
 fn main() {
     openssl_probe::init_ssl_cert_env_vars();
-    env_logger::init().unwrap();
+    drop(env_logger::init());
 
     let flags = vec![
         Arg::with_name("output")
@@ -260,7 +260,7 @@ fn handler(identifier: &str, options: &Options) {
             Err(_) => {
                 println!("stream pipe file error");
                 return;
-            },
+            }
         };
     }
 
