@@ -3,14 +3,12 @@
 
 extern crate clap;
 extern crate env_logger;
-extern crate env_variables;
 #[macro_use]
 extern crate log;
 extern crate openssl_probe;
 extern crate pbr;
 extern crate reqwest;
 extern crate serde_json;
-extern crate url;
 extern crate ytdl;
 
 use clap::{App, AppSettings, Arg};
