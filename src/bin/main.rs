@@ -1,17 +1,17 @@
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
+#![cfg_attr(feature = "clippy", feature(plugin))]
+#![cfg_attr(feature = "clippy", plugin(clippy))]
 
-extern crate ytdl;
 extern crate clap;
-extern crate url;
+extern crate env_logger;
+extern crate env_variables;
 #[macro_use]
 extern crate log;
-extern crate env_logger;
-extern crate reqwest;
-extern crate pbr;
-extern crate serde_json;
 extern crate openssl_probe;
-extern crate env_proxy;
+extern crate pbr;
+extern crate reqwest;
+extern crate serde_json;
+extern crate url;
+extern crate ytdl;
 
 use clap::{App, AppSettings, Arg};
 use pbr::{ProgressBar, Units};
@@ -272,23 +272,17 @@ fn filter_formats(filters: &Vec<String>, formats: &FormatList) -> FormatList {
     for fi in filters {
         let filter_str = fi.as_str();
         formats = match filter_str {
-            "best" | "worst" => {
-                formats
-                    .extremes(format::FORMAT_RESOLUTION_KEY, filter_str == "best")
-                    .extremes(format::FORMAT_AUDIO_BITRATE_KEY, filter_str == "best")
-            }
-            "best-video" | "worst-video" => {
-                formats.extremes(
-                    format::FORMAT_RESOLUTION_KEY,
-                    filter_str.starts_with("best"),
-                )
-            }
-            "best-audio" | "worst-audio" => {
-                formats.extremes(
-                    format::FORMAT_AUDIO_BITRATE_KEY,
-                    filter_str.starts_with("best"),
-                )
-            }
+            "best" | "worst" => formats
+                .extremes(format::FORMAT_RESOLUTION_KEY, filter_str == "best")
+                .extremes(format::FORMAT_AUDIO_BITRATE_KEY, filter_str == "best"),
+            "best-video" | "worst-video" => formats.extremes(
+                format::FORMAT_RESOLUTION_KEY,
+                filter_str.starts_with("best"),
+            ),
+            "best-audio" | "worst-audio" => formats.extremes(
+                format::FORMAT_AUDIO_BITRATE_KEY,
+                filter_str.starts_with("best"),
+            ),
             _ => {
                 let split = filter_str.splitn(2, ":").collect::<Vec<&str>>();
                 if split.len() != 2 {

@@ -3,7 +3,7 @@ use errors::*;
 use reqwest::{Client, StatusCode, self as request};
 use std::collections::HashMap;
 use std::io::Read;
-use env_proxy;
+use env_variables;
 
 use url::{Url, form_urlencoded};
 use url::percent_encoding::percent_decode;
@@ -185,7 +185,7 @@ fn parse_query(query_str: String) -> HashMap<String, String> {
 }
 
 pub fn get_client(s: &str) -> Result<Client> {
-    let client = if let Some(u) = env_proxy::for_url_str(s) {
+    let client = if let Some(u) = env_variables::for_url(s) {
         request::Client::builder()?
             .proxy(request::Proxy::all(u.as_str())?)
             .build()?
