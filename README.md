@@ -19,7 +19,7 @@ chmod +x ytdl
 ```
 ## linux
 ```sh
-wget https://github.com/cssivision/ytdl/releases/download/v0.1.5/ytdl-linux
+wget https://github.com/cssivision/ytdl/releases/download/v0.1.5/ytdl.linux
 chmod +x ytdl-linux
 ```
 # Usage
