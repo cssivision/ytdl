@@ -55,7 +55,3 @@ ARGS:
 # Licenses
 
 All source code is licensed under the [MIT License](https://github.com/cssivision/ytdl/blob/master/LICENSE).
-
-# Todo 
-- concurrent download.
-
