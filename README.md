@@ -14,13 +14,13 @@ cargo install ytdl
 Fetch [lastest releases](https://github.com/cssivision/ytdl/releases).
 ## macos
 ```sh
-wget https://github.com/cssivision/ytdl/releases/download/v0.1.4/ytdl
+wget https://github.com/cssivision/ytdl/releases/download/v0.1.5/ytdl
 chmod +x ytdl
 ```
 ## linux
 ```sh
-wget https://github.com/cssivision/ytdl/releases/download/v0.1.4/ytdl-linux
-chmod +x ytdl-linux
+wget https://github.com/cssivision/ytdl/releases/download/v0.1.5/ytdl.linux
+chmod +x ytdl.linux
 ```
 # Usage
 ## example
@@ -55,7 +55,3 @@ ARGS:
 # Licenses
 
 All source code is licensed under the [MIT License](https://github.com/cssivision/ytdl/blob/master/LICENSE).
-
-# Todo 
-- concurrent download.
-
