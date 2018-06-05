@@ -5,7 +5,7 @@ version = "0.1.5"
 license = "MIT"
 repository = "https://github.com/cssivision/ytdl"
 homepage = "https://github.com/cssivision/ytdl"
-description = "youtube download cli write in rust."
+description = "youtube download cli in rust."
 readme = "README.md"
 
 [[bin]]
