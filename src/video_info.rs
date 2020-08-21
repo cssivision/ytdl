@@ -1,12 +1,12 @@
-use format::Format;
+use env_variables;
 use errors::*;
-use reqwest::{Client, StatusCode, self as request};
+use format::Format;
+use reqwest::{self as request, Client, StatusCode};
 use std::collections::HashMap;
 use std::io::Read;
-use env_variables;
 
-use url::{Url, form_urlencoded};
 use url::percent_encoding::percent_decode;
+use url::{form_urlencoded, Url};
 
 const YOUTUBE_VIDEO_INFO_URL: &str = "https://www.youtube.com/get_video_info";
 
@@ -60,7 +60,8 @@ pub fn get_video_info(value: &str) -> Result<VideoInfo> {
 }
 
 fn get_video_info_from_url(u: &Url) -> Result<VideoInfo> {
-    if let Some(video_id) = u.query_pairs()
+    if let Some(video_id) = u
+        .query_pairs()
         .into_owned()
         .collect::<HashMap<String, String>>()
         .get("v")
@@ -71,7 +72,7 @@ fn get_video_info_from_url(u: &Url) -> Result<VideoInfo> {
 }
 
 fn get_video_info_from_short_url(u: &Url) -> Result<VideoInfo> {
-    let path = u.path().trim_left_matches("/");
+    let path = u.path().trim_start_matches("/");
     if path.len() > 0 {
         return get_video_info_from_html(path);
     }
@@ -82,7 +83,9 @@ fn get_video_info_from_short_url(u: &Url) -> Result<VideoInfo> {
 fn get_video_info_from_html(id: &str) -> Result<VideoInfo> {
     let info_url = format!("{}?video_id={}", YOUTUBE_VIDEO_INFO_URL, id);
     debug!("{}", info_url);
-    let mut resp = get_client(info_url.as_str())?.get(info_url.as_str())?.send()?;
+    let mut resp = get_client(info_url.as_str())?
+        .get(info_url.as_str())?
+        .send()?;
     if resp.status() != StatusCode::Ok {
         bail!("video info response invalid status code");
     }

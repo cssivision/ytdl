@@ -13,13 +13,12 @@ name = "ytdl"
 path = "src/bin/main.rs"
 
 [dependencies]
-clippy = {version = "0.0.144", optional = true}
 clap = "2.25.1"
-log = "0.3.8"
+log = "0.4"
 env_logger = "0.4.3"
 url = "1.5.1"
 reqwest = "0.7.0"
-lazy_static = "0.2.8"
+lazy_static = "1.0"
 serde_derive = "1.0.10"
 serde = "1.0.10"
 serde_json = "1.0.2"
